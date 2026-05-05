@@ -37,6 +37,25 @@ Thumbs.db
 # Logs / generated outputs
 logs/
 outputs/
+cache/
+tmp/
+*.log
+
+# Do not ignore all reports; keep curated reports for GitHub
+# reports/
+
+# Ignore only large temporary report artifacts if needed
+reports/*.tmp
+reports/*.log
 
 # Keep figures by default unless they are too large
 # figures/
+
+# Large model / binary artifacts
+*.bin
+*.model
+*.ckpt
+*.h5
+*.onnx
+*.pt
+*.pth
