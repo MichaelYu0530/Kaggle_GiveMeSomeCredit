@@ -2,9 +2,9 @@
 
 ## 推荐环境
 
-- 推荐 Python 版本：`3.10`
-- 当前 WSL 虚拟环境实测版本：`Python 3.10.12`
-- 建议在 Linux / WSL 环境中运行，而不是直接在 Windows 原生路径下运行
+- 推荐 Python 版本：`3.10+`
+- 当前项目的最终结果以 Windows Python 3.13 环境完整重跑产物为准
+- 如仅用于阅读结果和准备作品集，优先查看已导出的 notebook / Markdown / HTML 结果文件
 
 ## 创建虚拟环境
 
@@ -37,14 +37,16 @@ pip install -r requirements.txt
 推荐优先阅读：
 
 ```text
-operation.ipynb
+operation_full_output.ipynb
+reports/operation_full_output.md
+reports/operation_full_output.html
 ```
 
 原因：
 
-- notebook 前半部分保留了基础 EDA 和部分统计输出
-- 更适合作为项目展示材料
-- 比直接运行完整脚本更安全
+- `operation_full_output.ipynb` 是 Windows Python 3.13 环境下完整重跑后的最终结果 notebook
+- `reports/operation_full_output.md` / `.html` 适合直接阅读最终结果表和输出图
+- 比直接运行完整脚本更安全，也更符合当前作品集展示用途
 
 如果已注册 kernel，例如 `Python (gmsc)`，可直接在 Jupyter Notebook 或 VS Code 中打开。
 
@@ -77,27 +79,29 @@ python operation.py
 
 建议优先查看：
 
-1. `operation.ipynb` 已保存输出
-2. `figures/origin_data_basic_visualization.png`
-3. `figures/Raw_LR_fit_goodness_visualization.png`
-4. `figures/ScoreCard_fit_goodness_visualization.png`
-5. `figures/XGBoost_fit_goodness_visualization.png`
+1. `operation_full_output.ipynb`
+2. `reports/operation_full_output.md`
+3. `reports/operation_full_output.html`
+4. `figures/origin_data_basic_visualization.png`
+5. `figures/Raw_LR_fit_goodness_visualization.png`
+6. `figures/ScoreCard_fit_goodness_visualization.png`
+7. `figures/XGBoost_fit_goodness_visualization.png`
 
-这些内容通常足以帮助你快速理解项目主线，而无需立即重跑完整训练。
+这些内容通常足以帮助你快速理解项目主线和最终结果，而无需立即重跑完整训练。
 
 ## 关于 SHAP 与 XGBoost 兼容报错
 
-当前环境下，项目中的 SHAP 计算在 `calculate_shap_importance` 处可能报错，属于 **SHAP 与当前 XGBoost 版本组合下的兼容性问题**。
+在部分 Linux / WSL 环境下，项目中的 SHAP 计算在 `calculate_shap_importance` 处可能报错，属于 **SHAP 与当前 XGBoost 版本组合下的兼容性问题**。
 
 这意味着：
 
 - 主模型训练不一定失败
-- AUC / KS / F2 / 评分分箱等结果通常仍可复算
-- 但 SHAP 数值可能无法直接从当前环境中重新计算
+- 该问题主要影响 SHAP 的本地重算
+- 不影响 Windows notebook 已保存结果和核心模型评估指标
 
 因此在展示项目时，建议：
 
-- 先使用 `figures/XGBoost_fit_goodness_visualization.png` 中已保存的 SHAP 图
+- 优先使用 Windows notebook 已导出的结果文件和已保存 SHAP 图
 - 不要在未验证兼容性前强行修改模型逻辑
 
 ## 如何避免误运行完整长流程
@@ -106,8 +110,7 @@ python operation.py
 
 1. 先读 `README.md`
 2. 再读 `PROJECT_STRUCTURE.md`
-3. 再看 `operation.ipynb` 和 `figures/`
+3. 再看 `operation_full_output.ipynb`、`reports/operation_full_output.md` 和 `figures/`
 4. 确认理解项目后，再决定是否运行 `operation.py`
 
 如果只是为了写简历或浏览作品集，不建议第一步就执行完整训练。
-

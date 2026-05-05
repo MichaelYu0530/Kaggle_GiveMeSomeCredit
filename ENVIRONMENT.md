@@ -44,21 +44,26 @@
 
 ### 1. SHAP + XGBoost
 
-在当前已验证环境中：
+当前项目的最终结果已经在 Windows Python 3.13 环境中完成完整重跑，并导出为：
+
+- `operation_full_output.ipynb`
+- `reports/operation_full_output.md`
+- `reports/operation_full_output.html`
+
+在部分 Linux / WSL 环境中：
 
 - `xgboost` 可以完成模型训练
 - 但 `shap.TreeExplainer(xgb_model)` 在项目现有代码路径下可能报错
 
 这说明：
 
-- 当前环境 **已验证存在 SHAP 与 XGBoost 的兼容问题**
-- 但目前 **未验证具体应当固定到哪个版本组合**
-
-因此本项目文档不会编造“某版本必定兼容”的结论。
+- SHAP 兼容性问题主要影响部分 Linux / WSL 环境下的 SHAP 重算
+- 不影响 Windows notebook 已保存结果和核心模型评估指标
+- 目前仍未确认应固定到哪一组版本组合，因此文档不编造“某版本必定兼容”的结论
 
 ### 2. Matplotlib 缓存目录
 
-在部分 WSL 环境中，`matplotlib` 可能提示默认缓存目录不可写，并临时回退到 `/tmp`。这通常不影响运行，但会产生提示信息。
+在部分 Linux / WSL 环境中，`matplotlib` 可能提示默认缓存目录不可写，并临时回退到 `/tmp`。这通常不影响运行，但会产生提示信息。
 
 ## 如何生成 requirements.txt
 
@@ -81,16 +86,11 @@ pip freeze > requirements.txt
   - 项目运行所需的核心依赖清单
   - 更短、更清晰，适合作为 GitHub 项目最小安装说明
 
-## 为什么建议优先使用 WSL / Linux
+## 当前环境口径说明
 
-对于当前项目，WSL / Linux 更合适，原因包括：
-
-- 虚拟环境和命令行流程更统一
-- Jupyter / Python 路径更清晰，便于复现
-- 与常见数据科学工作流更一致
-- 某些依赖在 Linux 下更容易安装和运行
-
-这不是说 Windows 一定不能运行，而是 WSL / Linux 更有利于减少路径和环境差异带来的问题。
+- 当前项目的最终模型结果统一以 Windows Python 3.13 环境完整重跑产物为准
+- Linux / WSL 环境仍可用于辅助阅读、脚本开发和部分本地复现
+- 但若 Linux / WSL 环境下的复算结果与 Windows notebook 输出不一致，应优先采用 Windows `operation_full_output` 导出结果
 
 ## 建议的环境管理方式
 
@@ -98,4 +98,4 @@ pip freeze > requirements.txt
 - 单独保留 `requirements.txt` 与 `requirements_minimal.txt`
 - 在正式上传 GitHub 前补充轻量环境检查脚本
 - 在修复 SHAP 问题前，先将“主模型结果复现”和“SHAP 可解释性复现”视为两个独立步骤
-
+- 后续可进一步固定 Python、pandas、scikit-learn、xgboost、shap 等版本，以降低跨环境结果差异

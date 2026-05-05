@@ -7,6 +7,12 @@ Kaggle_GiveMeSomeCredits/
 ├── .gitignore
 ├── .venv/
 ├── Data Dictionary.xls
+├── ENVIRONMENT.md
+├── PROJECT_REPORT_DRAFT.md
+├── PROJECT_STRUCTURE.md
+├── README.md
+├── RUN_GUIDE.md
+├── TODO.md
 ├── analysis.py
 ├── backup/
 │   ├── cs-test.csv
@@ -23,8 +29,20 @@ Kaggle_GiveMeSomeCredits/
 │   └── origin_data_basic_visualization.png
 ├── operation.ipynb
 ├── operation.py
+├── operation_full_output.ipynb
 ├── pipeline.py
+├── reports/
+│   ├── operation_full_output.html
+│   ├── operation_full_output.md
+│   ├── operation_full_output_files/
+│   │   └── reports/
+│   │       ├── operation_full_output_2_0.png
+│   │       ├── operation_full_output_46_0.png
+│   │       ├── operation_full_output_46_1.png
+│   │       └── operation_full_output_46_2.png
+│   └── RESULTS_SUMMARY.md
 ├── requirements.txt
+├── requirements_minimal.txt
 └── visualization.py
 ```
 
@@ -38,27 +56,30 @@ Kaggle_GiveMeSomeCredits/
   - 是当前项目最重要的核心代码文件
 
 - `analysis.py`
-  - 统计分析与指标函数
-  - 包含显著性检验、IV、PSI、AUC、KS、Lift/Gain、SHAP 等计算逻辑
+  - 统计分析与模型评估函数
+  - 包含显著性检验、IV、PSI、AUC、KS、Lift/Gain、SHAP 相关计算逻辑
   - 属于核心代码文件
 
 - `visualization.py`
   - 可视化模块
-  - 包含原始数据 EDA 图、模型效果图、评分分箱图、SHAP 图等
+  - 包含基础 EDA 图、模型效果图、评分分箱图、SHAP 图等
   - 属于核心代码文件
 
 - `operation.py`
   - 实验主脚本
-  - 按顺序组织完整项目流程
-  - 包括数据探索、变量筛选、模型训练和最终比较
+  - 按顺序组织完整项目流程，包括数据探索、变量筛选、模型训练和最终比较
   - 属于核心代码文件
 
 ### Notebook 文件
 
 - `operation.ipynb`
-  - `operation.py` 的 notebook 版本
-  - 适合阅读实验过程、查看已保存输出和中间结果
-  - 建议优先作为展示材料阅读
+  - 项目的实验型 notebook
+  - 适合阅读主流程、查看中间分析思路和交互式输出
+
+- `operation_full_output.ipynb`
+  - 完整重跑后的结果版 notebook
+  - 当前项目最终模型结果以该 notebook 及其导出报告为准
+  - 是最适合对外展示和引用结果的 notebook 文件
 
 ### 数据文件
 
@@ -74,32 +95,79 @@ Kaggle_GiveMeSomeCredits/
 - `backup/cs-training.csv`
 - `backup/cs-test.csv`
   - 备份数据文件
-  - 当前用途可理解为原始数据备份
+  - 当前未见核心流程显式依赖，可视为原始数据备份
 
-### 输出图片目录
+### 报告与说明文档
+
+- `README.md`
+  - GitHub 首页展示说明
+  - 用于介绍项目背景、方法、结果、运行方式和当前状态
+
+- `PROJECT_REPORT_DRAFT.md`
+  - 项目报告草稿
+  - 用于系统整理项目方法、结果、问题和简历可提炼亮点
+
+- `RUN_GUIDE.md`
+  - 运行与阅读指南
+  - 说明如何查看 notebook、结果导出文件和避免误跑长流程
+
+- `ENVIRONMENT.md`
+  - 环境与依赖说明
+  - 记录主要第三方库用途、兼容性问题和环境建议
+
+- `TODO.md`
+  - 后续工程化整理清单
+
+### 结果文件与输出目录
+
+- `reports/operation_full_output.md`
+  - `operation_full_output.ipynb` 导出的 Markdown 结果文件
+  - 当前最终模型结果的重要文本依据
+
+- `reports/operation_full_output.html`
+  - `operation_full_output.ipynb` 导出的 HTML 结果文件
+  - 适合直接浏览完整 notebook 输出
+
+- `reports/operation_full_output_files/`
+  - notebook 导出时生成的配套资源目录
+  - 当前包含导出图片文件，供 Markdown/HTML 正常显示使用
+
+- `reports/RESULTS_SUMMARY.md`
+  - 结果摘要说明
+  - 用于快速查看最终结果来源、关键指标和引用口径
 
 - `figures/`
   - 已保存的项目可视化结果
-  - 包括基础 EDA 图、Raw LR/ScoreCard/XGBoost 效果图，以及收入填充实验图
+  - 包括基础 EDA 图、Raw LR / ScoreCard / XGBoost 效果图，以及收入填充实验图
 
-## 可能的临时实验文件或待整理文件
+### 依赖文件
 
-- `operation.ipynb`
-  - 是主要展示材料之一，但同时也保留了较强的实验 notebook 属性
-  - 未来可进一步拆分为“正式展示版”和“实验记录版”
+- `requirements_minimal.txt`
+  - 项目最小依赖列表
+  - 适合快速创建可读可跑环境
 
 - `requirements.txt`
-  - 当前更像完整环境快照，而不是项目最小依赖文件
-  - 建议保留，同时增加更简洁的 `requirements_minimal.txt`
+  - 当前环境依赖快照
+  - 更接近完整环境文件，而非最小依赖文件
+
+## 可能的实验性或待进一步整理文件
+
+- `operation.ipynb`
+  - 仍保留较强的实验 notebook 属性
+  - 后续可视需要进一步区分“实验记录版”和“对外展示版”
 
 - `figures/2Dbin_vs_RF_*.png`
   - 与收入填充对比实验相关
-  - 当前在主项目叙事中的优先级低于违约预测主线
-  - 可视为待进一步整理的实验产物
-
-## 用途待确认
+  - 在当前主项目叙事中的优先级低于违约预测主线
 
 - `backup/`
-  - 从命名看像数据备份目录
-  - 除备份外是否参与正式流程，当前未看到核心代码显式依赖，故标记为“用途待确认”
+  - 从目录命名看属于数据备份
+  - 除备份外的正式用途待进一步确认
 
+## 当前建议的阅读顺序
+
+1. `README.md`
+2. `reports/RESULTS_SUMMARY.md`
+3. `operation_full_output.ipynb`
+4. `reports/operation_full_output.md`
+5. `pipeline.py`、`analysis.py`、`visualization.py`、`operation.py`

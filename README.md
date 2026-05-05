@@ -127,8 +127,9 @@
 
 说明：
 
-- 当前仓库内 `Raw LR` 与 `XGBoost` 的复算结果较稳定
-- `ScoreCard` 相关图像与当前环境复算结果存在版本不同步现象，使用时建议结合 notebook 记录和项目报告交叉核对
+- 当前项目的最终模型结果统一以 Windows Python 3.13 环境完整重跑后的 `operation_full_output.ipynb` 为准
+- 结果已导出为 `reports/operation_full_output.md` 与 `reports/operation_full_output.html`
+- 此前三类模型在其他环境下的辅助复算结果不作为当前项目最终结果依据
 
 ## 模型评估指标
 
@@ -145,13 +146,21 @@
 - 评分分箱违约率
 - `SHAP` 全局重要性
 
-若部分指标在当前环境下无法完全复算，请以：
+当前项目最终模型比较结果如下：
 
-- 已保存图像 `figures/`
-- `operation.ipynb` 已保存输出
-- 项目报告草稿
+| model | test AUC | AUC gap | test KS | KS gap |
+|---|---:|---:|---:|---:|
+| Raw LR | 0.8581 | 0.0012 | 0.5671 | -0.0066 |
+| WOE LR / ScoreCard | 0.8612 | -0.0013 | 0.5641 | -0.0056 |
+| XGBoost | 0.8659 | 0.0074 | 0.5825 | 0.0067 |
 
-为准，不建议自行补写未经确认的数值。
+如需引用结果，请优先以：
+
+- `operation_full_output.ipynb`
+- `reports/operation_full_output.md`
+- `reports/operation_full_output.html`
+
+为准；`figures/` 主要作为辅助展示材料。
 
 ## 项目亮点
 
@@ -163,7 +172,7 @@
 
 ## 当前项目状态
 
-当前项目属于 **可运行、可阅读、可复算部分关键结果** 的实验型项目，适合作为作品集展示，但仍有一些工程化工作待补充：
+当前项目属于 **已完成完整实验、已导出结果、适合用于作品集展示** 的实验型项目，但仍有一些工程化工作待补充：
 
 - 尚未沉淀统一的最终结果表
 - 尚未拆分出轻量复现脚本
@@ -176,7 +185,7 @@
 
 推荐先阅读：
 
-1. `operation.ipynb`
+1. `operation_full_output.ipynb`
 2. `PROJECT_REPORT_DRAFT.md`
 3. `RUN_GUIDE.md`
 
@@ -190,7 +199,7 @@ python operation.py
 
 - `operation.py` 会触发较完整的实验流程，耗时可能较长
 - 不建议在未了解流程前直接运行完整训练
-- 优先建议先查看 notebook 已保存输出和 `figures/` 中已有图像
+- 优先建议先查看 `operation_full_output.ipynb` 和 `reports/operation_full_output.md`
 
 ## 环境要求
 
@@ -210,9 +219,11 @@ python operation.py
 
 ## 结果说明
 
-- 部分关键指标可以在当前环境下重新复算
-- 部分结果以 `figures/` 图像和 notebook 已保存输出为准
-- 如果同一模型在“已保存图像”和“当前代码复算”之间出现差异，应优先标注为版本未完全同步，而不是强行选择某一组数字
+- 当前最终结果来自 Windows Python 3.13 环境完整重跑后的 `operation_full_output.ipynb`
+- 已导出结果文件：`reports/operation_full_output.md`、`reports/operation_full_output.html`
+- 此前 Linux / WSL 环境下的辅助复算结果与 Windows notebook 输出存在差异，推测与 Python、pandas、scikit-learn、xgboost、shap 等环境版本或 notebook 运行状态差异有关，因此不作为当前项目最终结果依据
+- `Raw LR`、`WOE LR / ScoreCard`、`XGBoost` 三类模型均已完成比较，其中 `XGBoost` 的测试集 `AUC=0.8659`、`KS=0.5825`，排序区分能力最佳；`WOE LR / ScoreCard` 的测试集 `AUC=0.8612`、`KS=0.5641`，兼具较强效果和风控解释性
+- SHAP 兼容性问题只影响部分 Linux 环境下的 SHAP 重算，不影响 Windows notebook 已保存结果和核心模型评估指标
 
 更详细说明见 [PROJECT_REPORT_DRAFT.md](./PROJECT_REPORT_DRAFT.md)。
 
@@ -224,4 +235,3 @@ python operation.py
 - 解决 SHAP 与 XGBoost 的兼容性问题
 - 将长耗时训练流程与结果读取流程拆开
 - 补充更清晰的最终结果表与 benchmark 对比
-

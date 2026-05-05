@@ -139,27 +139,35 @@
 
 ### 当前结果说明
 
-#### 当前环境复算得到的关键结果
+#### 当前最终结果来源
 
-来源：当前 `.venv` 环境复算
+当前项目的最终模型结果统一以 Windows Python 3.13 环境完整重跑后的：
 
-- `Raw LR`
-  - `test AUC = 0.858176`
-  - `test KS = 0.565149`
+- `operation_full_output.ipynb`
+- `reports/operation_full_output.md`
+- `reports/operation_full_output.html`
 
-- `WOE LR`
-  - `test AUC = 0.830364`
-  - `test KS = 0.495180`
+为准。
 
-- `XGBoost`
-  - `test AUC = 0.865870`
-  - `test KS = 0.582983`
+#### 最终模型比较结果
 
-#### 需要谨慎解释的地方
+| model | test AUC | AUC gap | test KS | KS gap |
+|---|---:|---:|---:|---:|
+| Raw LR | 0.8581 | 0.0012 | 0.5671 | -0.0066 |
+| WOE LR / ScoreCard | 0.8612 | -0.0013 | 0.5641 | -0.0056 |
+| XGBoost | 0.8659 | 0.0074 | 0.5825 | 0.0067 |
 
-- 当前环境复算的 `ScoreCard / WOE LR` 与 `figures/ScoreCard_fit_goodness_visualization.png` 中的表现不完全一致
-- 说明当前代码、notebook 和已保存结果图之间可能存在版本不同步
-- 因此对 `ScoreCard` 的精确数值应标记为“待进一步核对”
+#### 结果解释
+
+- `XGBoost` 在三类模型中测试集 `AUC` 与 `KS` 最优，排序区分能力最佳
+- `WOE LR / ScoreCard` 的测试集 `AUC=0.8612`、`KS=0.5641`，在保持较强效果的同时具备较好的风控解释性
+- `Raw LR` 也保持了较强基线能力，适合作为传统统计建模对照模型
+
+#### 关于历史辅助复算结果
+
+- 此前 Linux / WSL 环境下存在过辅助复算结果
+- 这些结果与 Windows notebook 输出存在差异，推测与 Python、pandas、scikit-learn、xgboost、shap 等环境版本或 notebook 运行状态差异有关
+- 因此历史 Linux / WSL 复算结果不作为当前项目最终结果依据
 
 ## 评估指标
 
@@ -177,8 +185,8 @@
 
 说明：
 
-- 部分数值来自当前环境复算
-- 部分可视化结果来自 `figures/` 中已保存图像
+- 核心模型指标统一来自 Windows Python 3.13 环境完整重跑后的 `operation_full_output` 导出结果
+- `figures/` 中的图像主要作为辅助展示材料
 
 ## 可解释性分析
 
@@ -189,9 +197,9 @@
 
 ### 当前问题
 
-- 当前环境下 `SHAP + XGBoost` 存在兼容性报错
-- 因此 SHAP 数值未在当前环境中完整复算
-- 当前项目展示时建议优先引用已保存图像中的 SHAP 面板
+- SHAP 兼容性问题主要影响部分 Linux 环境下的 SHAP 重算
+- 该问题不影响 Windows notebook 已保存的结果图与核心模型评估指标
+- 当前项目展示时可直接引用已导出的 notebook 结果和已保存图像中的 SHAP 面板
 
 来源：
 
@@ -212,23 +220,15 @@
 
 ## 已知问题
 
-### 1. ScoreCard 结果版本不同步
-
-- 当前代码复算结果
-- notebook 历史记录
-- 已保存图像
-
-三者之间对 `ScoreCard` 的结果存在差异，需后续统一。
-
-### 2. SHAP 与 XGBoost 兼容性问题
+### 1. SHAP 与 XGBoost 兼容性问题
 
 - 当前环境下可训练 XGBoost
 - 但 SHAP 解释器初始化报错
 
-### 3. 结果沉淀不足
+### 2. 结果沉淀仍可进一步完善
 
-- 最终模型结果表尚未单独整理为报告文件
-- notebook 中后半段很多结果并未持久化保存为可直接引用的数据表
+- 当前已导出 `operation_full_output.md` / `.html`
+- 但仍可进一步增加面向 README 和简历展示的轻量结果摘要页
 
 ## 简历可提炼亮点
 
@@ -240,11 +240,10 @@
 
 ## 结果来源说明
 
-- 当前环境复算结果：来源于当前 `.venv` 运行项目核心流程
-- 已保存图像结果：来源于 `figures/`
-- notebook 历史输出：来源于 `operation.ipynb`
+- 最终模型结果主来源：Windows Python 3.13 环境完整重跑后的 `operation_full_output.ipynb`
+- 导出结果文件：`reports/operation_full_output.md`、`reports/operation_full_output.html`
+- 辅助展示材料：`figures/`
 
-若某项结果未在以上三类来源中被一致确认，应标记为：
+若某项结果未在最终导出结果文件中明确给出，应标记为：
 
 - `待确认`
-
