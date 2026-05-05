@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Data files
+*.csv
+*.xls
+*.xlsx
+*.zip
+*.rar
+*.7z
+
+# Model / intermediate artifacts
+*.pkl
+*.pickle
+*.joblib
+*.npy
+*.npz
+
+# Logs / generated outputs
+logs/
+outputs/
+
+# Keep figures by default unless they are too large
+# figures/
