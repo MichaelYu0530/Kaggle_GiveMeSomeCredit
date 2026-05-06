@@ -10,4 +10,4 @@ shap
 ipython
 xlrd
 jupyter
-
+tabulate
