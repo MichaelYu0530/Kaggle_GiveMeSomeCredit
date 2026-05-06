@@ -3,7 +3,6 @@ from pipeline import *
 from visualization import *
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
-import os
 import sys
 import traceback
 from pathlib import Path
@@ -37,7 +36,6 @@ REPORTS_DIR = Path('reports')
 REPORTS_DIR.mkdir(exist_ok=True)
 GENERATED_REPORT_FILES = []
 
-
 def get_runtime_info() -> dict:
     return {
         'python_path': sys.executable,
@@ -49,7 +47,6 @@ def get_runtime_info() -> dict:
         'shap': shap.__version__,
         'statsmodels': statsmodels.__version__,
     }
-
 
 def save_dataframe_outputs(
     df: pd.DataFrame,
@@ -85,7 +82,6 @@ def save_dataframe_outputs(
         f.write('\n')
     GENERATED_REPORT_FILES.extend([str(csv_file), str(md_file)])
 
-
 def summarize_best_f2(y_true: pd.Series, y_prob: np.ndarray, model_name: str) -> pd.DataFrame:
     thresholds = np.linspace(0, 1, 200)
     recall_list = []
@@ -119,7 +115,6 @@ def summarize_best_f2(y_true: pd.Series, y_prob: np.ndarray, model_name: str) ->
         'lift_at_10pct': get_metric_near_population(0.10, 'lift'),
         'lift_at_25pct': get_metric_near_population(0.25, 'lift')
     }])
-
 
 def write_run_summary(
     model_comparison_df: pd.DataFrame,
@@ -166,7 +161,7 @@ def write_run_summary(
 # 加载原始数据
 origin_data = import_data(filetype='train')
 # 基础可视化
-basic_visualization_fig = show_basic_visualization(origin_data)
+basic_visualization_fig = show_basic_visualization(origin_data, is_saving=False)
 # 补充的重要发现
 special_discovery_df = show_special_discovery(origin_data)
 # endregion

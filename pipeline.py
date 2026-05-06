@@ -9,7 +9,6 @@ from sklearn.model_selection import StratifiedKFold
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestRegressor
 import xgboost as xgb
-import shap
 from typing import Literal
 import warnings
 warnings.filterwarnings('ignore')
