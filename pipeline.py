@@ -1880,39 +1880,73 @@ def filter_bins_2D(
     
     return passed_bins_2D_df
 
-# 创建分箱列对应的WOE列
-def add_woe_column(data: pd.DataFrame, colname: str) -> None:
+def _validate_woe_source_column(colname: str) -> None:
+    if not colname.endswith(('_flag', '_signal', '_bin')) and not colname.startswith(('has_', 'is_')):
+        raise ValueError(f"In function add_woe_column: {colname} is neither a bin column nor a flag column.")
+
+
+def fit_woe_mapping(train_data: pd.DataFrame, colname: str) -> dict[pd.Interval | float, float]:
     """
-    添加分箱列对应的WOE列
+    在训练数据上拟合单列WOE映射。
+    
+    参数
+    ----------
+    train_data : pd.DataFrame
+        训练数据，必须包含目标变量与待编码列
+    colname : str
+        分箱列名或标记列名
+    
+    返回
+    ----------
+    dict
+        训练集拟合得到的WOE映射
+    """
+
+    _validate_woe_source_column(colname)
+    woe_map, _ = calculate_woe_iv(train_data, colname)
+    return woe_map
+
+
+def apply_woe_mapping(
+    data: pd.DataFrame, colname: str, woe_map: dict[pd.Interval | float, float], default_woe: float=0.0
+) -> None:
+    """
+    将既有WOE映射应用到任意数据集，不读取目标变量。
     
     参数
     ----------
     data : pd.DataFrame
-        包含分箱列或标记列的数据集
+        待编码数据集
     colname : str
-        分箱列名或标记列名（必须以 _flag, _signal, _bin 结尾或以 has_, is_ 开头）
-    
-    返回
-    ----------
-    None
-        无返回值，直接修改原数据框，添加 {colname}_woe 列
-    
-    异常
-    ----------
-    ValueError
-        如果colname不符合命名规范，或WOE映射不完整
+        分箱列名或标记列名
+    woe_map : dict
+        由训练集拟合得到的WOE映射
+    default_woe : float, default=0.0
+        未知分箱或缺失映射时采用的默认WOE值
     """
-	
-    if not colname.endswith(('_flag', '_signal', '_bin')) and not colname.startswith(('has_', 'is_')):
-        raise ValueError(f"In function add_woe_column: {colname} is neither a bin column nor a flag column.")
-    
+
+    _validate_woe_source_column(colname)
+
     woe_colname = f'{colname}_woe'
-    woe_map, _ = calculate_woe_iv(data, colname)
-    woe_values = data[colname].map(woe_map)
-    if woe_values.isna().any():
-        raise ValueError("In function add_woe_col: woe_map does not match current bin column.")
-    else:
-        data[woe_colname] = woe_values
+    source_values = data[colname].astype('object')
+    woe_values = source_values.map(woe_map).fillna(default_woe).astype('float64')
+    data[woe_colname] = woe_values
+
+
+# 创建分箱列对应的WOE列
+def add_woe_column(data: pd.DataFrame, colname: str) -> None:
+    """
+    添加分箱列对应的WOE列。
+    
+    注意
+    ----------
+    本函数会基于传入数据集当前标签现算WOE，只适合训练数据或旧实验代码。
+    对于验证集 / 测试集，请改用 fit_woe_mapping + apply_woe_mapping，
+    避免使用验证/测试标签重新计算WOE造成数据泄漏。
+    """
+
+    woe_map = fit_woe_mapping(data, colname)
+    apply_woe_mapping(data, colname, woe_map)
 
 # 自定义的评分卡模型类
 class ScoreCard:

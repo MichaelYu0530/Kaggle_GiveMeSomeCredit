@@ -508,8 +508,9 @@ def main() -> None:
         )
     binnames_map_to_woe = passed_binary_colnames + passed_binnames_1D + low_iv_binnames_1D + passed_binnames_2D
     for colname in binnames_map_to_woe:
-        add_woe_column(train_data_woe_lr, colname)
-        add_woe_column(test_data_woe_lr, colname)
+        woe_map = fit_woe_mapping(train_data_woe_lr, colname)
+        apply_woe_mapping(train_data_woe_lr, colname, woe_map)
+        apply_woe_mapping(test_data_woe_lr, colname, woe_map)
     woe_colnames = [colname for colname in train_data_woe_lr.columns if colname.endswith("_woe")]
     train_data_woe_lr = train_data_woe_lr[[target] + woe_colnames]
     test_data_woe_lr = test_data_woe_lr[[target] + woe_colnames]
