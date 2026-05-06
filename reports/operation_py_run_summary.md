@@ -1,7 +1,7 @@
 # operation.py 运行摘要
 
 - 运行入口：`operation.py`
-- Python 路径：`/home/father_yuyue/projects/Kaggle_GiveMeSomeCredits/.venv_py313/bin/python`
+- Python 路径：`/home/father_yuyue/projects/Kaggle_GiveMeSomeCredits/.venv/bin/python`
 - Python 版本：`3.13.13`
 - pandas：`2.3.3`
 - numpy：`2.2.6`
