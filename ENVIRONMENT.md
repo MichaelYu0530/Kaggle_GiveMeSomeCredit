@@ -1,5 +1,13 @@
 # 环境说明
 
+## 当前推荐环境
+
+- 推荐 Python 版本：`3.13`
+- 标准虚拟环境目录：`.venv`
+- 推荐依赖文件：`requirements.txt`
+- 完整锁定依赖文件：`requirements_lock.txt`
+- 简洁依赖说明：`requirements_minimal.txt`
+
 ## 当前项目主要第三方依赖
 
 以下库是当前项目中明确使用到的主要依赖：
@@ -40,62 +48,61 @@
 - `jupyter`
   - notebook 运行与阅读
 
-## 当前已知兼容性问题
+## 环境与兼容性说明
 
 ### 1. SHAP + XGBoost
 
-当前项目的最终结果已经在 Windows Python 3.13 环境中完成完整重跑，并导出为：
+当前项目的核心结果已经在以下两类环境输出中得到保留：
 
 - `operation_full_output.ipynb`
 - `reports/operation_full_output.md`
 - `reports/operation_full_output.html`
+- `reports/model_comparison_from_operation_py.md`
+- `reports/f2_threshold_summary_from_operation_py.md`
+- `reports/scorecard_bins_from_operation_py.md`
+- `reports/operation_py_run_summary.md`
 
-在部分 Linux / WSL 环境中：
+早期在部分 Linux / WSL 环境中：
 
 - `xgboost` 可以完成模型训练
 - 但 `shap.TreeExplainer(xgb_model)` 在项目现有代码路径下可能报错
 
 这说明：
 
-- SHAP 兼容性问题主要影响部分 Linux / WSL 环境下的 SHAP 重算
-- 不影响 Windows notebook 已保存结果和核心模型评估指标
-- 目前仍未确认应固定到哪一组版本组合，因此文档不编造“某版本必定兼容”的结论
+- SHAP 兼容性问题主要影响个别环境下的可解释性重算
+- 不影响当前项目的 AUC、KS、F2、Gain/Lift、评分分箱等核心结果
+- 当前推荐 Python 3.13 环境已能支撑核心结果展示
+- 如需进一步追求跨环境一致性，可继续单独跟踪 SHAP 与依赖组合
 
 ### 2. Matplotlib 缓存目录
 
 在部分 Linux / WSL 环境中，`matplotlib` 可能提示默认缓存目录不可写，并临时回退到 `/tmp`。这通常不影响运行，但会产生提示信息。
 
-## 如何生成 requirements.txt
-
-如果你希望从当前激活环境导出完整依赖快照，可使用：
-
-```bash
-pip freeze > requirements.txt
-```
-
-这会生成包含所有安装包及版本号的完整文件，更适合记录“当前环境状态”。
-
-## requirements.txt 与 requirements_minimal.txt 的区别
+## requirements 文件说明
 
 - `requirements.txt`
-  - 当前环境完整快照
-  - 包含 notebook、Jupyter、widgets、底层依赖等大量包
-  - 更适合环境归档，不一定适合展示
+  - 当前项目推荐依赖文件
+  - 适合作为标准安装入口
+
+- `requirements_lock.txt`
+  - 完整锁定依赖文件
+  - 适合保留更完整的环境版本信息
 
 - `requirements_minimal.txt`
-  - 项目运行所需的核心依赖清单
-  - 更短、更清晰，适合作为 GitHub 项目最小安装说明
+  - 项目运行所需的简洁依赖清单
+  - 更适合作为 GitHub 项目的轻量安装说明
 
 ## 当前环境口径说明
 
-- 当前项目的最终模型结果统一以 Windows Python 3.13 环境完整重跑产物为准
+- 当前项目的完整实验结果由 Windows Python 3.13 notebook 导出文件保留
+- 当前标准 Python 3.13 `.venv` 环境下的 `operation.py` 结果可作为结构化结果摘要引用
+- 两套可信来源整体一致，轻微差异不影响主结论
 - Linux / WSL 环境仍可用于辅助阅读、脚本开发和部分本地复现
-- 但若 Linux / WSL 环境下的复算结果与 Windows notebook 输出不一致，应优先采用 Windows `operation_full_output` 导出结果
 
 ## 建议的环境管理方式
 
 - 使用独立 `.venv`
-- 单独保留 `requirements.txt` 与 `requirements_minimal.txt`
+- 单独保留 `requirements.txt`、`requirements_lock.txt` 与 `requirements_minimal.txt`
 - 在正式上传 GitHub 前补充轻量环境检查脚本
-- 在修复 SHAP 问题前，先将“主模型结果复现”和“SHAP 可解释性复现”视为两个独立步骤
-- 后续可进一步固定 Python、pandas、scikit-learn、xgboost、shap 等版本，以降低跨环境结果差异
+- 将“主模型结果复现”和“SHAP 可解释性复现”视为两个可分离步骤
+- 后续可继续细化 Python、pandas、scikit-learn、xgboost、shap 等版本说明，以降低跨环境结果差异

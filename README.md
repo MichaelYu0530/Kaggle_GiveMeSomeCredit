@@ -26,7 +26,7 @@
 
 ## 项目技术路线
 
-项目整体流程与 `operation.py` / `operation.ipynb` 基本一致：
+项目整体流程与 `operation.py` / `operation.ipynb` 基本一致，当前核心结果同时沉淀在完整 notebook 导出报告与 `operation.py` 生成的 `reports/` 结果文件中：
 
 1. 导入原始数据并完成基础 EDA
 2. 识别缺失值、特殊编码和极端值
@@ -34,7 +34,7 @@
 4. 构建一维分箱、二维分箱、WOE 编码
 5. 使用 5 折分层交叉验证筛选变量与参数
 6. 比较 `Raw Logistic Regression`、`WOE Logistic Regression / ScoreCard`、`XGBoost`
-7. 输出 PR / KS / Lift / Gain / 评分分箱等可视化结果
+7. 输出 AUC / KS / F2 / Precision / Recall / Gain / Lift / 评分分箱等结果与可视化
 
 ## 项目结构
 
@@ -43,7 +43,7 @@
 - `pipeline.py`：主数据流水线、特征工程、分箱、评分卡、模型训练与评估函数
 - `analysis.py`：统计分析、AUC/KS/PSI/IV/SHAP 等指标函数
 - `visualization.py`：EDA 与模型效果可视化
-- `operation.py`：实验主脚本
+- `operation.py`：实验主脚本，同时支持导出模型比较、F2 阈值摘要、评分卡分箱和运行摘要
 - `operation.ipynb`：实验 notebook 版本
 - `figures/`：已保存的图像结果
 
@@ -127,9 +127,9 @@
 
 说明：
 
-- 当前项目的最终模型结果统一以 Windows Python 3.13 环境完整重跑后的 `operation_full_output.ipynb` 为准
-- 结果已导出为 `reports/operation_full_output.md` 与 `reports/operation_full_output.html`
-- 此前三类模型在其他环境下的辅助复算结果不作为当前项目最终结果依据
+- Windows Python 3.13 环境完整重跑后的 `operation_full_output.ipynb` 及其导出文件构成完整实验归档
+- 当前标准 Python 3.13 `.venv` 环境下运行 `operation.py`，也已支持将核心结果输出到 `reports/`
+- 两套可信结果来源整体一致，轻微数值差异不影响主结论
 
 ## 模型评估指标
 
@@ -150,17 +150,20 @@
 
 | model | test AUC | AUC gap | test KS | KS gap |
 |---|---:|---:|---:|---:|
-| Raw LR | 0.8581 | 0.0012 | 0.5671 | -0.0066 |
+| Raw LR | 0.8582 | 0.0013 | 0.5651 | -0.0045 |
 | WOE LR / ScoreCard | 0.8612 | -0.0013 | 0.5641 | -0.0056 |
-| XGBoost | 0.8659 | 0.0074 | 0.5825 | 0.0067 |
+| XGBoost | 0.8659 | 0.0067 | 0.5830 | 0.0050 |
 
 如需引用结果，请优先以：
 
 - `operation_full_output.ipynb`
 - `reports/operation_full_output.md`
 - `reports/operation_full_output.html`
+- `reports/model_comparison_from_operation_py.md`
+- `reports/f2_threshold_summary_from_operation_py.md`
+- `reports/scorecard_bins_from_operation_py.md`
 
-为准；`figures/` 主要作为辅助展示材料。
+其中 notebook 导出文件更适合保留完整实验上下文，`operation.py` 导出的 `reports/` 更适合 README、简历和 GitHub 展示时直接引用；`figures/` 主要作为辅助展示材料。
 
 ## 项目亮点
 
@@ -172,12 +175,14 @@
 
 ## 当前项目状态
 
-当前项目属于 **已完成完整实验、已导出结果、适合用于作品集展示** 的实验型项目，但仍有一些工程化工作待补充：
+当前项目已经完成 **端到端建模 + 初步工程化整理**，具备 GitHub 作品集展示基础：
 
-- 尚未沉淀统一的最终结果表
-- 尚未拆分出轻量复现脚本
-- SHAP 与当前 XGBoost 版本存在兼容性问题
-- 部分中间结果只保存在 notebook 中
+- `operation_full_output.ipynb` / `.md` / `.html` 保留了完整实验输出
+- `operation.py` 已支持导出模型比较、F2 / Precision / Recall、评分卡分箱和运行摘要
+- `reports/` 已形成可直接引用的结果归档
+- `figures/` 当前仅保留主线展示图片
+
+当前仍有进一步优化空间，例如轻量复现入口、README 展示优化和脚本职责拆分。
 
 详细待办见 [TODO.md](./TODO.md)。
 
@@ -203,11 +208,12 @@ python operation.py
 
 ## 环境要求
 
-- 推荐 Python 版本：`3.10`
+- 推荐 Python 版本：`3.13`
 - 建议使用虚拟环境
-- 主要依赖见：
-- `requirements_minimal.txt`：项目核心依赖
-- `requirements.txt`：当前环境完整依赖快照
+- 依赖文件说明：
+- `requirements.txt`：推荐依赖文件
+- `requirements_lock.txt`：完整锁定依赖文件
+- `requirements_minimal.txt`：简洁依赖说明
 
 环境说明见 [ENVIRONMENT.md](./ENVIRONMENT.md)。
 
@@ -219,19 +225,19 @@ python operation.py
 
 ## 结果说明
 
-- 当前最终结果来自 Windows Python 3.13 环境完整重跑后的 `operation_full_output.ipynb`
-- 已导出结果文件：`reports/operation_full_output.md`、`reports/operation_full_output.html`
-- 此前 Linux / WSL 环境下的辅助复算结果与 Windows notebook 输出存在差异，推测与 Python、pandas、scikit-learn、xgboost、shap 等环境版本或 notebook 运行状态差异有关，因此不作为当前项目最终结果依据
-- `Raw LR`、`WOE LR / ScoreCard`、`XGBoost` 三类模型均已完成比较，其中 `XGBoost` 的测试集 `AUC=0.8659`、`KS=0.5825`，排序区分能力最佳；`WOE LR / ScoreCard` 的测试集 `AUC=0.8612`、`KS=0.5641`，兼具较强效果和风控解释性
-- SHAP 兼容性问题只影响部分 Linux 环境下的 SHAP 重算，不影响 Windows notebook 已保存结果和核心模型评估指标
+- 当前可信结果来源包括：
+- Windows Python 3.13 环境完整重跑后的 `operation_full_output.ipynb`
+- 当前标准 Python 3.13 `.venv` 环境下 `operation.py` 导出的 `reports/` 结果
+- 两套来源整体一致；若存在轻微差异，不影响主结论
+- `Raw LR`、`WOE LR / ScoreCard`、`XGBoost` 三类模型均已完成比较，其中 `XGBoost` 的测试集表现约为 `AUC=0.8659`、`KS=0.5830`，排序区分能力最佳；`WOE LR / ScoreCard` 的测试集表现约为 `AUC=0.8612`、`KS=0.5641`，兼具较强效果和风控解释性
+- 早期 Linux / WSL 环境中曾出现 SHAP 或依赖兼容性问题，但这类问题不影响当前项目的 AUC、KS、F2、Gain/Lift 等核心结果引用
 
 更详细说明见 [PROJECT_REPORT_DRAFT.md](./PROJECT_REPORT_DRAFT.md)。
 
 ## 后续改进方向
 
-- 将 notebook 中已保存结果抽取为独立报告
 - 增加轻量环境检查与结果复现脚本
-- 固定更稳定的依赖环境
-- 解决 SHAP 与 XGBoost 的兼容性问题
+- 进一步精简 README 和 GitHub 展示结构
 - 将长耗时训练流程与结果读取流程拆开
-- 补充更清晰的最终结果表与 benchmark 对比
+- 进一步区分 notebook 与脚本的职责
+- 可选地继续优化 SHAP 与环境说明

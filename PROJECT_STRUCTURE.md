@@ -20,9 +20,6 @@ Kaggle_GiveMeSomeCredits/
 ├── cs-test.csv
 ├── cs-training.csv
 ├── figures/
-│   ├── 2Dbin_vs_RF_KDE.png
-│   ├── 2Dbin_vs_RF_residual.png
-│   ├── 2Dbin_vs_RF_scatter.png
 │   ├── Raw_LR_fit_goodness_visualization.png
 │   ├── ScoreCard_fit_goodness_visualization.png
 │   ├── XGBoost_fit_goodness_visualization.png
@@ -32,6 +29,8 @@ Kaggle_GiveMeSomeCredits/
 ├── operation_full_output.ipynb
 ├── pipeline.py
 ├── reports/
+│   ├── f2_threshold_summary_from_operation_py.md
+│   ├── model_comparison_from_operation_py.md
 │   ├── operation_full_output.html
 │   ├── operation_full_output.md
 │   ├── operation_full_output_files/
@@ -40,8 +39,11 @@ Kaggle_GiveMeSomeCredits/
 │   │       ├── operation_full_output_46_0.png
 │   │       ├── operation_full_output_46_1.png
 │   │       └── operation_full_output_46_2.png
-│   └── RESULTS_SUMMARY.md
+│   ├── operation_py_run_summary.md
+│   ├── RESULTS_SUMMARY.md
+│   └── scorecard_bins_from_operation_py.md
 ├── requirements.txt
+├── requirements_lock.txt
 ├── requirements_minimal.txt
 └── visualization.py
 ```
@@ -67,7 +69,7 @@ Kaggle_GiveMeSomeCredits/
 
 - `operation.py`
   - 实验主脚本
-  - 按顺序组织完整项目流程，包括数据探索、变量筛选、模型训练和最终比较
+  - 按顺序组织完整项目流程，包括数据探索、变量筛选、模型训练、最终比较和结果导出
   - 属于核心代码文件
 
 ### Notebook 文件
@@ -136,9 +138,17 @@ Kaggle_GiveMeSomeCredits/
   - 结果摘要说明
   - 用于快速查看最终结果来源、关键指标和引用口径
 
+- `reports/model_comparison_from_operation_py.md`
+- `reports/f2_threshold_summary_from_operation_py.md`
+- `reports/scorecard_bins_from_operation_py.md`
+- `reports/operation_py_run_summary.md`
+  - `operation.py` 在标准 Python 3.13 `.venv` 环境下导出的结构化结果
+  - 便于直接引用模型比较、阈值摘要、评分卡分箱和运行环境信息
+
 - `figures/`
   - 已保存的项目可视化结果
-  - 包括基础 EDA 图、Raw LR / ScoreCard / XGBoost 效果图，以及收入填充实验图
+  - 当前包括基础 EDA 图，以及 Raw LR / ScoreCard / XGBoost 三类模型效果图
+  - 旧的月收入填充实验图已从当前展示集移除
 
 ### 依赖文件
 
@@ -147,18 +157,18 @@ Kaggle_GiveMeSomeCredits/
   - 适合快速创建可读可跑环境
 
 - `requirements.txt`
-  - 当前环境依赖快照
-  - 更接近完整环境文件，而非最小依赖文件
+  - 推荐依赖文件
+  - 适合作为当前项目的标准安装入口
 
-## 可能的实验性或待进一步整理文件
+- `requirements_lock.txt`
+  - 完整锁定依赖文件
+  - 适合记录更完整的环境版本信息
+
+## 当前说明
 
 - `operation.ipynb`
   - 仍保留较强的实验 notebook 属性
   - 后续可视需要进一步区分“实验记录版”和“对外展示版”
-
-- `figures/2Dbin_vs_RF_*.png`
-  - 与收入填充对比实验相关
-  - 在当前主项目叙事中的优先级低于违约预测主线
 
 - `backup/`
   - 从目录命名看属于数据备份

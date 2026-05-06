@@ -141,21 +141,29 @@
 
 #### 当前最终结果来源
 
-当前项目的最终模型结果统一以 Windows Python 3.13 环境完整重跑后的：
+当前项目的可信结果主要来自两类来源：
 
 - `operation_full_output.ipynb`
 - `reports/operation_full_output.md`
 - `reports/operation_full_output.html`
+- `reports/model_comparison_from_operation_py.md`
+- `reports/f2_threshold_summary_from_operation_py.md`
+- `reports/scorecard_bins_from_operation_py.md`
+- `reports/operation_py_run_summary.md`
 
-为准。
+其中：
+
+- Windows Python 3.13 环境完整重跑后的 notebook 导出文件保留了完整实验上下文；
+- 当前标准 Python 3.13 `.venv` 环境下的 `operation.py` 导出结果适合做结构化摘要引用；
+- 两套来源整体一致，轻微差异不影响项目主结论。
 
 #### 最终模型比较结果
 
 | model | test AUC | AUC gap | test KS | KS gap |
 |---|---:|---:|---:|---:|
-| Raw LR | 0.8581 | 0.0012 | 0.5671 | -0.0066 |
+| Raw LR | 0.8582 | 0.0013 | 0.5651 | -0.0045 |
 | WOE LR / ScoreCard | 0.8612 | -0.0013 | 0.5641 | -0.0056 |
-| XGBoost | 0.8659 | 0.0074 | 0.5825 | 0.0067 |
+| XGBoost | 0.8659 | 0.0067 | 0.5830 | 0.0050 |
 
 #### 结果解释
 
@@ -166,8 +174,8 @@
 #### 关于历史辅助复算结果
 
 - 此前 Linux / WSL 环境下存在过辅助复算结果
-- 这些结果与 Windows notebook 输出存在差异，推测与 Python、pandas、scikit-learn、xgboost、shap 等环境版本或 notebook 运行状态差异有关
-- 因此历史 Linux / WSL 复算结果不作为当前项目最终结果依据
+- 当前标准 Python 3.13 `.venv` 环境下，`operation.py` 已可稳定导出核心结果，且与 Windows notebook 输出整体一致
+- 因此当前项目对外展示时，可同时引用完整 notebook 导出结果与当前脚本落盘结果
 
 ## 评估指标
 
@@ -185,7 +193,8 @@
 
 说明：
 
-- 核心模型指标统一来自 Windows Python 3.13 环境完整重跑后的 `operation_full_output` 导出结果
+- 核心模型比较结果可以引用 Windows notebook 导出结果，也可以引用当前 `operation.py` 落盘结果
+- `operation.py` 当前已支持输出模型比较、F2 / Precision / Recall 阈值摘要、评分卡分箱和运行摘要
 - `figures/` 中的图像主要作为辅助展示材料
 
 ## 可解释性分析
@@ -195,11 +204,11 @@
 - 评分卡分箱违约率分析
 - XGBoost 的 SHAP 重要性分析接口
 
-### 当前问题
+### 当前说明
 
-- SHAP 兼容性问题主要影响部分 Linux 环境下的 SHAP 重算
-- 该问题不影响 Windows notebook 已保存的结果图与核心模型评估指标
-- 当前项目展示时可直接引用已导出的 notebook 结果和已保存图像中的 SHAP 面板
+- 早期 Linux 环境下曾出现过 SHAP 或依赖兼容性问题
+- 当前推荐 Python 3.13 环境已完成核心结果复现，且 `operation.py` 运行摘要显示 SHAP 已成功执行
+- SHAP 属于可解释性辅助模块，不影响 AUC、KS、F2、Gain/Lift 等核心指标引用
 
 来源：
 
@@ -218,17 +227,21 @@
 - 部分早期规则标记是在较前阶段统一生成的
 - 简历中应写“具备数据泄漏防控意识”，不宜夸大为完全工业级流程
 
-## 已知问题
+## 当前状态与后续优化
 
-### 1. SHAP 与 XGBoost 兼容性问题
+### 当前已完成
 
-- 当前环境下可训练 XGBoost
-- 但 SHAP 解释器初始化报错
+- 已完成端到端建模流程与初步工程化整理
+- 已保留完整 notebook 导出归档，并补充脚本级结果落盘
+- `reports/` 已包含模型比较、F2 / Precision / Recall、评分卡分箱和运行摘要
+- `figures/` 当前仅保留主线展示图片
 
-### 2. 结果沉淀仍可进一步完善
+### 后续仍可优化
 
-- 当前已导出 `operation_full_output.md` / `.html`
-- 但仍可进一步增加面向 README 和简历展示的轻量结果摘要页
+- 增加更轻量的环境检查与结果复现入口
+- 进一步精简 README 与 GitHub 展示内容
+- 继续区分 notebook 与脚本的职责
+- 可选地继续跟踪 SHAP 与跨环境兼容性说明
 
 ## 简历可提炼亮点
 
@@ -240,8 +253,8 @@
 
 ## 结果来源说明
 
-- 最终模型结果主来源：Windows Python 3.13 环境完整重跑后的 `operation_full_output.ipynb`
-- 导出结果文件：`reports/operation_full_output.md`、`reports/operation_full_output.html`
+- 最终结果主来源：Windows Python 3.13 环境完整重跑后的 `operation_full_output.ipynb` 及其导出文件
+- 当前脚本结果来源：标准 Python 3.13 `.venv` 环境下 `operation.py` 导出的 `reports/` 文件
 - 辅助展示材料：`figures/`
 
 若某项结果未在最终导出结果文件中明确给出，应标记为：
