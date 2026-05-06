@@ -7,6 +7,7 @@
 - 推荐依赖文件：`requirements.txt`
 - 完整锁定依赖文件：`requirements_lock.txt`
 - 简洁依赖说明：`requirements_minimal.txt`
+- 推荐快速复现入口：`run_final_report.py`
 
 ## 当前项目主要第三方依赖
 
@@ -54,13 +55,13 @@
 
 当前项目的核心结果已经在以下两类环境输出中得到保留：
 
+- `reports/final_model_comparison.md`
+- `reports/final_f2_threshold_summary.md`
+- `reports/final_scorecard_bins.md`
+- `reports/final_report_run_summary.md`
 - `operation_full_output.ipynb`
 - `reports/operation_full_output.md`
 - `reports/operation_full_output.html`
-- `reports/model_comparison_from_operation_py.md`
-- `reports/f2_threshold_summary_from_operation_py.md`
-- `reports/scorecard_bins_from_operation_py.md`
-- `reports/operation_py_run_summary.md`
 
 早期在部分 Linux / WSL 环境中：
 
@@ -94,9 +95,10 @@
 
 ## 当前环境口径说明
 
-- 当前项目的完整实验结果由 Windows Python 3.13 notebook 导出文件保留
-- 当前标准 Python 3.13 `.venv` 环境下的 `operation.py` 结果可作为结构化结果摘要引用
-- 两套可信来源整体一致，轻微差异不影响主结论
+- 当前项目的主展示结果建议以 `run_final_report.py` 导出的 `reports/final_*` 为准
+- `operation_full_output.ipynb` / `.md` / `.html` 继续保留完整历史实验归档
+- `operation.py` 导出的 `reports/` 结果保留为完整研究流程的历史结构化输出
+- 不同可信来源之间只存在轻微差异，不影响主结论
 - Linux / WSL 环境仍可用于辅助阅读、脚本开发和部分本地复现
 
 ## 建议的环境管理方式
@@ -104,5 +106,5 @@
 - 使用独立 `.venv`
 - 单独保留 `requirements.txt`、`requirements_lock.txt` 与 `requirements_minimal.txt`
 - 在正式上传 GitHub 前补充轻量环境检查脚本
-- 将“主模型结果复现”和“SHAP 可解释性复现”视为两个可分离步骤
+- 将“final-only 结果复现”“完整研究流程复现”“SHAP 可解释性复现”视为三个可分离步骤
 - 后续可继续细化 Python、pandas、scikit-learn、xgboost、shap 等版本说明，以降低跨环境结果差异

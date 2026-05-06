@@ -26,7 +26,11 @@
 
 ## 项目技术路线
 
-项目整体流程与 `operation.py` / `operation.ipynb` 基本一致，当前核心结果同时沉淀在完整 notebook 导出报告与 `operation.py` 生成的 `reports/` 结果文件中：
+项目整体流程与 `operation.py` / `operation.ipynb` 基本一致。当前项目同时保留：
+
+- `operation.py` / `operation.ipynb` 对应的完整研究与调参流程
+- `operation_full_output.ipynb` 及其导出文件，对应历史完整 notebook 归档
+- `run_final_report.py` 对应的 final-only 复现入口，用于快速复现最终三模型结果并导出 `reports/final_*`
 
 1. 导入原始数据并完成基础 EDA
 2. 识别缺失值、特殊编码和极端值
@@ -43,7 +47,8 @@
 - `pipeline.py`：主数据流水线、特征工程、分箱、评分卡、模型训练与评估函数
 - `analysis.py`：统计分析、AUC/KS/PSI/IV/SHAP 等指标函数
 - `visualization.py`：EDA 与模型效果可视化
-- `operation.py`：实验主脚本，同时支持导出模型比较、F2 阈值摘要、评分卡分箱和运行摘要
+- `operation.py`：完整研究/调参主脚本，包含较长耗时的筛选、交叉验证和参数搜索流程
+- `run_final_report.py`：final-only 快速复现入口，直接复用已定稿特征列表和参数，导出 `reports/final_*`
 - `operation.ipynb`：实验 notebook 版本
 - `figures/`：已保存的图像结果
 
@@ -127,10 +132,11 @@
 
 说明：
 
-- Windows Python 3.13 环境完整重跑后的 `operation_full_output.ipynb` 及其导出文件构成完整实验归档
-- 当前标准 Python 3.13 `.venv` 环境下运行 `operation.py`，也已支持将核心结果输出到 `reports/`
-- 最终用于横向比较的 XGBoost 采用前序调参确定的固定最佳参数组合重新拟合，测试集仅用于最终评估
-- 两套可信结果来源整体一致，轻微数值差异不影响主结论
+- `operation.py` 主要承担完整研究与调参流程，不作为日常快速复现入口
+- `run_final_report.py` 是当前推荐复现入口，会直接导出最终模型比较、F2 阈值摘要、评分卡分箱和运行摘要
+- `operation_full_output.ipynb` 及其 `.md` / `.html` 导出文件继续保留完整历史实验上下文
+- final-only 脚本中的最终 XGBoost 拟合不使用 `eval_set=[(X_test_xgb, y_test)]`，也不使用 `early_stopping_rounds`
+- 不同可信来源之间只存在轻微数值差异，不影响主结论
 
 ## 模型评估指标
 
@@ -153,18 +159,16 @@
 |---|---:|---:|---:|---:|
 | Raw LR | 0.8582 | 0.0013 | 0.5651 | -0.0045 |
 | WOE LR / ScoreCard | 0.8612 | -0.0013 | 0.5641 | -0.0056 |
-| XGBoost | 0.8659 | 0.0067 | 0.5830 | 0.0050 |
+| XGBoost | 0.8662 | 0.0091 | 0.5824 | 0.0096 |
 
 如需引用结果，请优先以：
 
-- `operation_full_output.ipynb`
-- `reports/operation_full_output.md`
-- `reports/operation_full_output.html`
-- `reports/model_comparison_from_operation_py.md`
-- `reports/f2_threshold_summary_from_operation_py.md`
-- `reports/scorecard_bins_from_operation_py.md`
+- `reports/final_model_comparison.md`
+- `reports/final_f2_threshold_summary.md`
+- `reports/final_scorecard_bins.md`
+- `reports/final_report_run_summary.md`
 
-其中 notebook 导出文件更适合保留完整实验上下文，`operation.py` 导出的 `reports/` 更适合 README、简历和 GitHub 展示时直接引用；`figures/` 主要作为辅助展示材料。
+其中 `reports/final_*` 适合 README、简历和 GitHub 展示时直接引用；`operation_full_output.ipynb` / `.md` / `.html` 与 `operation.py` 导出的旧 `reports/` 更适合作为研究流程与历史结果归档；`figures/` 主要作为辅助展示材料。
 
 ## 项目亮点
 
@@ -178,12 +182,12 @@
 
 当前项目已经完成 **端到端建模 + 初步工程化整理**，具备 GitHub 作品集展示基础：
 
-- `operation_full_output.ipynb` / `.md` / `.html` 保留了完整实验输出
-- `operation.py` 已支持导出模型比较、F2 / Precision / Recall、评分卡分箱和运行摘要
-- `reports/` 已形成可直接引用的结果归档
+- `operation_full_output.ipynb` / `.md` / `.html` 保留了完整实验输出归档
+- `run_final_report.py` 已支持快速复现最终模型结果并导出 `reports/final_*`
+- `reports/` 已形成“历史完整输出 + final-only 结果摘要”的双层归档
 - `figures/` 当前仅保留主线展示图片
 
-当前仍有进一步优化空间，例如轻量复现入口、README 展示优化和脚本职责拆分。
+当前仍有进一步优化空间，例如 README 展示优化、脚本职责继续拆分和轻量测试补充。
 
 详细待办见 [TODO.md](./TODO.md)。
 
@@ -191,21 +195,21 @@
 
 推荐先阅读：
 
-1. `operation_full_output.ipynb`
+1. `reports/final_model_comparison.md`
 2. `PROJECT_REPORT_DRAFT.md`
 3. `RUN_GUIDE.md`
 
 如需实际运行：
 
 ```bash
-python operation.py
+.venv/bin/python run_final_report.py
 ```
 
 注意：
 
-- `operation.py` 会触发较完整的实验流程，耗时可能较长
-- 不建议在未了解流程前直接运行完整训练
-- 优先建议先查看 `operation_full_output.ipynb` 和 `reports/operation_full_output.md`
+- `run_final_report.py` 是当前推荐复现入口，适合快速得到最终模型结果
+- `operation.py` 会触发较完整的研究与调参流程，耗时明显更长
+- 如只需查看完整实验上下文，可优先阅读 `operation_full_output.ipynb` 和 `reports/operation_full_output.md`
 
 ## 环境要求
 
@@ -227,18 +231,17 @@ python operation.py
 ## 结果说明
 
 - 当前可信结果来源包括：
-- Windows Python 3.13 环境完整重跑后的 `operation_full_output.ipynb`
-- 当前标准 Python 3.13 `.venv` 环境下 `operation.py` 导出的 `reports/` 结果
-- 两套来源整体一致；若存在轻微差异，不影响主结论
-- `Raw LR`、`WOE LR / ScoreCard`、`XGBoost` 三类模型均已完成比较，其中 `XGBoost` 的测试集表现约为 `AUC=0.8659`、`KS=0.5830`，排序区分能力最佳；`WOE LR / ScoreCard` 的测试集表现约为 `AUC=0.8612`、`KS=0.5641`，兼具较强效果和风控解释性
+- `run_final_report.py` 导出的 `reports/final_*` 文件
+- Windows Python 3.13 环境完整重跑后的 `operation_full_output.ipynb` 及其导出文件
+- 当前标准 Python 3.13 `.venv` 环境下的 final-only 结果建议作为 README、简历和 GitHub 展示的主引用口径
+- `Raw LR`、`WOE LR / ScoreCard`、`XGBoost` 三类模型均已完成比较，其中 `XGBoost` 的测试集表现约为 `AUC=0.8662`、`KS=0.5824`，排序区分能力最佳；`WOE LR / ScoreCard` 的测试集表现约为 `AUC=0.8612`、`KS=0.5641`，兼具较强效果和风控解释性
 - 早期 Linux / WSL 环境中曾出现 SHAP 或依赖兼容性问题，但这类问题不影响当前项目的 AUC、KS、F2、Gain/Lift 等核心结果引用
 
 更详细说明见 [PROJECT_REPORT_DRAFT.md](./PROJECT_REPORT_DRAFT.md)。
 
 ## 后续改进方向
 
-- 增加轻量环境检查与结果复现脚本
 - 进一步精简 README 和 GitHub 展示结构
-- 将长耗时训练流程与结果读取流程拆开
+- 继续优化“完整研究入口”和“final-only 复现入口”的职责边界
 - 进一步区分 notebook 与脚本的职责
 - 可选地继续优化 SHAP 与环境说明

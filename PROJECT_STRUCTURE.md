@@ -28,7 +28,12 @@ Kaggle_GiveMeSomeCredits/
 ├── operation.py
 ├── operation_full_output.ipynb
 ├── pipeline.py
+├── run_final_report.py
 ├── reports/
+│   ├── final_f2_threshold_summary.md
+│   ├── final_model_comparison.md
+│   ├── final_report_run_summary.md
+│   ├── final_scorecard_bins.md
 │   ├── f2_threshold_summary_from_operation_py.md
 │   ├── model_comparison_from_operation_py.md
 │   ├── operation_full_output.html
@@ -72,6 +77,11 @@ Kaggle_GiveMeSomeCredits/
   - 按顺序组织完整项目流程，包括数据探索、变量筛选、模型训练、最终比较和结果导出
   - 属于核心代码文件
 
+- `run_final_report.py`
+  - final-only 快速复现脚本
+  - 跳过完整调参与特征搜索，直接复用已定稿特征组合与参数字典
+  - 用于快速训练最终三模型并导出 `reports/final_*`
+
 ### Notebook 文件
 
 - `operation.ipynb`
@@ -80,8 +90,8 @@ Kaggle_GiveMeSomeCredits/
 
 - `operation_full_output.ipynb`
   - 完整重跑后的结果版 notebook
-  - 当前项目最终模型结果以该 notebook 及其导出报告为准
-  - 是最适合对外展示和引用结果的 notebook 文件
+  - 保留历史完整实验上下文
+  - 适合作为研究流程归档与补充材料
 
 ### 数据文件
 
@@ -138,12 +148,19 @@ Kaggle_GiveMeSomeCredits/
   - 结果摘要说明
   - 用于快速查看最终结果来源、关键指标和引用口径
 
+- `reports/final_model_comparison.md`
+- `reports/final_f2_threshold_summary.md`
+- `reports/final_scorecard_bins.md`
+- `reports/final_report_run_summary.md`
+  - `run_final_report.py` 导出的 final-only 主结果文件
+  - 适合作为 README、简历和 GitHub 展示时的直接引用来源
+
 - `reports/model_comparison_from_operation_py.md`
 - `reports/f2_threshold_summary_from_operation_py.md`
 - `reports/scorecard_bins_from_operation_py.md`
 - `reports/operation_py_run_summary.md`
-  - `operation.py` 在标准 Python 3.13 `.venv` 环境下导出的结构化结果
-  - 便于直接引用模型比较、阈值摘要、评分卡分箱和运行环境信息
+  - `operation.py` 在标准 Python 3.13 `.venv` 环境下导出的历史结构化结果
+  - 更适合作为完整研究流程的辅助归档，而不是当前主展示结果
 
 - `figures/`
   - 已保存的项目可视化结果
@@ -170,6 +187,10 @@ Kaggle_GiveMeSomeCredits/
   - 仍保留较强的实验 notebook 属性
   - 后续可视需要进一步区分“实验记录版”和“对外展示版”
 
+- `operation.py`
+  - 当前定位为完整研究/调参入口
+  - 日常快速复现更建议使用 `run_final_report.py`
+
 - `backup/`
   - 从目录命名看属于数据备份
   - 除备份外的正式用途待进一步确认
@@ -178,6 +199,8 @@ Kaggle_GiveMeSomeCredits/
 
 1. `README.md`
 2. `reports/RESULTS_SUMMARY.md`
-3. `operation_full_output.ipynb`
-4. `reports/operation_full_output.md`
-5. `pipeline.py`、`analysis.py`、`visualization.py`、`operation.py`
+3. `reports/final_model_comparison.md`
+4. `reports/final_f2_threshold_summary.md`
+5. `operation_full_output.ipynb`
+6. `reports/operation_full_output.md`
+7. `pipeline.py`、`analysis.py`、`visualization.py`、`operation.py`、`run_final_report.py`

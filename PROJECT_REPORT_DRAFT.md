@@ -143,19 +143,20 @@
 
 当前项目的可信结果主要来自两类来源：
 
+- `reports/final_model_comparison.md`
+- `reports/final_f2_threshold_summary.md`
+- `reports/final_scorecard_bins.md`
+- `reports/final_report_run_summary.md`
 - `operation_full_output.ipynb`
 - `reports/operation_full_output.md`
 - `reports/operation_full_output.html`
-- `reports/model_comparison_from_operation_py.md`
-- `reports/f2_threshold_summary_from_operation_py.md`
-- `reports/scorecard_bins_from_operation_py.md`
-- `reports/operation_py_run_summary.md`
 
 其中：
 
+- 当前标准 Python 3.13 `.venv` 环境下，`run_final_report.py` 是推荐的 final-only 复现入口；
 - Windows Python 3.13 环境完整重跑后的 notebook 导出文件保留了完整实验上下文；
-- 当前标准 Python 3.13 `.venv` 环境下的 `operation.py` 导出结果适合做结构化摘要引用；
-- 最终用于横向比较的 XGBoost 采用前序调参确定的固定最佳参数组合重新拟合，测试集仅用于最终评估；
+- `operation.py` 保留为完整研究与调参流程，不作为日常快速复现入口；
+- final-only 脚本中的最终 XGBoost 采用固定 `best_para_xgb_dict` 重新拟合，不使用 test-set early stopping；
 - 两套来源整体一致，轻微差异不影响项目主结论。
 
 #### 最终模型比较结果
@@ -164,7 +165,7 @@
 |---|---:|---:|---:|---:|
 | Raw LR | 0.8582 | 0.0013 | 0.5651 | -0.0045 |
 | WOE LR / ScoreCard | 0.8612 | -0.0013 | 0.5641 | -0.0056 |
-| XGBoost | 0.8659 | 0.0067 | 0.5830 | 0.0050 |
+| XGBoost | 0.8662 | 0.0091 | 0.5824 | 0.0096 |
 
 #### 结果解释
 
@@ -175,8 +176,8 @@
 #### 关于历史辅助复算结果
 
 - 此前 Linux / WSL 环境下存在过辅助复算结果
-- 当前标准 Python 3.13 `.venv` 环境下，`operation.py` 已可稳定导出核心结果，且与 Windows notebook 输出整体一致
-- 因此当前项目对外展示时，可同时引用完整 notebook 导出结果与当前脚本落盘结果
+- 当前标准 Python 3.13 `.venv` 环境下，`run_final_report.py` 已可快速复现最终模型结果并稳定导出 `reports/final_*`
+- 因此当前项目对外展示时，建议优先引用 `reports/final_*`，并将完整 notebook 导出文件作为历史实验上下文补充
 
 ## 评估指标
 
@@ -194,8 +195,8 @@
 
 说明：
 
-- 核心模型比较结果可以引用 Windows notebook 导出结果，也可以引用当前 `operation.py` 落盘结果
-- `operation.py` 当前已支持输出模型比较、F2 / Precision / Recall 阈值摘要、评分卡分箱和运行摘要
+- 核心模型比较结果建议优先引用 `reports/final_*`
+- `run_final_report.py` 当前已支持输出模型比较、F2 / Precision / Recall 阈值摘要、评分卡分箱和运行摘要
 - `figures/` 中的图像主要作为辅助展示材料
 
 ## 可解释性分析
@@ -208,7 +209,7 @@
 ### 当前说明
 
 - 早期 Linux 环境下曾出现过 SHAP 或依赖兼容性问题
-- 当前推荐 Python 3.13 环境已完成核心结果复现，且 `operation.py` 运行摘要显示 SHAP 已成功执行
+- 当前推荐 Python 3.13 环境已完成核心结果复现；SHAP 仍属于可解释性辅助模块
 - SHAP 属于可解释性辅助模块，不影响 AUC、KS、F2、Gain/Lift 等核心指标引用
 
 来源：
@@ -233,13 +234,12 @@
 ### 当前已完成
 
 - 已完成端到端建模流程与初步工程化整理
-- 已保留完整 notebook 导出归档，并补充脚本级结果落盘
-- `reports/` 已包含模型比较、F2 / Precision / Recall、评分卡分箱和运行摘要
+- 已保留完整 notebook 导出归档，并新增 final-only 复现入口 `run_final_report.py`
+- `reports/` 已同时包含 `final_*` 主结果文件与历史研究流程输出
 - `figures/` 当前仅保留主线展示图片
 
 ### 后续仍可优化
 
-- 增加更轻量的环境检查与结果复现入口
 - 进一步精简 README 与 GitHub 展示内容
 - 继续区分 notebook 与脚本的职责
 - 可选地继续跟踪 SHAP 与跨环境兼容性说明
@@ -254,8 +254,9 @@
 
 ## 结果来源说明
 
-- 最终结果主来源：Windows Python 3.13 环境完整重跑后的 `operation_full_output.ipynb` 及其导出文件
-- 当前脚本结果来源：标准 Python 3.13 `.venv` 环境下 `operation.py` 导出的 `reports/` 文件
+- 最终展示主来源：标准 Python 3.13 `.venv` 环境下 `run_final_report.py` 导出的 `reports/final_*`
+- 历史完整归档来源：Windows Python 3.13 环境完整重跑后的 `operation_full_output.ipynb` 及其导出文件
+- 历史脚本结果来源：标准 Python 3.13 `.venv` 环境下 `operation.py` 导出的 `reports/` 文件
 - 辅助展示材料：`figures/`
 
 若某项结果未在最终导出结果文件中明确给出，应标记为：

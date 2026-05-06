@@ -4,9 +4,9 @@
 
 - 推荐 Python 版本：`3.13`
 - 标准虚拟环境目录：`.venv`
-- 当前项目的最终结果以 Windows Python 3.13 环境完整重跑产物为准
-- 当前标准 Python 3.13 `.venv` 环境下，`operation.py` 也已支持导出结构化结果
-- 如仅用于阅读结果和准备作品集，优先查看已导出的 notebook / Markdown / HTML 结果文件与 `operation.py` 生成的 `reports/` 文件
+- 推荐日常复现入口：`run_final_report.py`
+- `operation.py` 是完整研究/调参流程，运行耗时较长，不作为日常快速复现入口
+- 如仅用于阅读结果和准备作品集，优先查看 `reports/final_*` 与历史 notebook 导出文件
 
 ## 创建虚拟环境
 
@@ -46,23 +46,36 @@ pip install -r requirements_lock.txt
 推荐优先阅读：
 
 ```text
-operation_full_output.ipynb
-reports/operation_full_output.md
-reports/operation_full_output.html
+reports/final_model_comparison.md
+reports/final_f2_threshold_summary.md
+reports/final_scorecard_bins.md
+reports/final_report_run_summary.md
 ```
 
 原因：
 
-- `operation_full_output.ipynb` 是 Windows Python 3.13 环境下完整重跑后的最终结果 notebook
-- `reports/operation_full_output.md` / `.html` 适合直接阅读最终结果表和输出图
-- `reports/model_comparison_from_operation_py.md`、`reports/f2_threshold_summary_from_operation_py.md`、`reports/scorecard_bins_from_operation_py.md` 适合快速查看当前脚本落盘结果
-- 比直接运行完整脚本更安全，也更符合当前作品集展示用途
+- `reports/final_*` 是当前 final-only 复现脚本生成的主结果文件
+- 它们适合直接查看最终模型比较、F2 阈值摘要和评分卡分箱
+- `operation_full_output.ipynb` / `.md` / `.html` 继续保留完整历史实验上下文
+- 比直接运行完整研究脚本更适合当前作品集展示和日常结果复核
 
 如果已注册 kernel，例如 `Python (gmsc)`，可直接在 Jupyter Notebook 或 VS Code 中打开。
 
 ## 如何运行核心脚本
 
-完整实验主脚本：
+推荐快速复现入口：
+
+```bash
+.venv/bin/python run_final_report.py
+```
+
+注意：
+
+- 该脚本会跳过 `operation.py` 中耗时的 grid search / 特征搜索 / 参数搜索
+- 直接复用已定稿特征列表和参数字典，训练最终三模型并导出 `reports/final_*`
+- 最终 XGBoost 拟合不使用 test-set early stopping
+
+完整研究入口：
 
 ```bash
 python operation.py
@@ -70,9 +83,9 @@ python operation.py
 
 注意：
 
-- 该脚本包含较完整的训练流程
-- 会执行分箱、交互项构造、交叉验证、模型训练、结果图生成和核心结果落盘
-- 不建议在不了解逻辑前直接运行
+- `operation.py` 会执行更完整的研究与调参流程
+- 包含分箱、交互项构造、交叉验证、变量筛选、参数搜索和结果导出
+- 耗时明显长于 `run_final_report.py`
 
 ## 哪些流程可能耗时较长
 
@@ -90,12 +103,12 @@ python operation.py
 建议优先查看：
 
 1. `operation_full_output.ipynb`
-2. `reports/operation_full_output.md`
-3. `reports/operation_full_output.html`
-4. `reports/model_comparison_from_operation_py.md`
-5. `reports/f2_threshold_summary_from_operation_py.md`
-6. `reports/scorecard_bins_from_operation_py.md`
-7. `reports/operation_py_run_summary.md`
+2. `reports/final_model_comparison.md`
+3. `reports/final_f2_threshold_summary.md`
+4. `reports/final_scorecard_bins.md`
+5. `reports/final_report_run_summary.md`
+6. `reports/operation_full_output.md`
+7. `reports/operation_full_output.html`
 8. `figures/origin_data_basic_visualization.png`
 9. `figures/Raw_LR_fit_goodness_visualization.png`
 10. `figures/ScoreCard_fit_goodness_visualization.png`
@@ -115,7 +128,7 @@ python operation.py
 
 因此在展示项目时，建议：
 
-- 优先使用已导出的 notebook 结果和 `operation.py` 落盘结果
+- 优先使用 `run_final_report.py` 导出的 `reports/final_*` 和历史 notebook 导出结果
 - 将 SHAP 兼容性说明视为可选环境说明，而不是当前项目主缺陷
 
 ## 如何避免误运行完整长流程
@@ -124,7 +137,7 @@ python operation.py
 
 1. 先读 `README.md`
 2. 再读 `PROJECT_STRUCTURE.md`
-3. 再看 `operation_full_output.ipynb`、`reports/operation_full_output.md` 和 `figures/`
-4. 确认理解项目后，再决定是否运行 `operation.py`
+3. 再看 `reports/final_*`、`operation_full_output.ipynb`、`reports/operation_full_output.md` 和 `figures/`
+4. 确认理解项目后，再决定是运行 `run_final_report.py` 还是 `operation.py`
 
 如果只是为了写简历或浏览作品集，不建议第一步就执行完整训练。

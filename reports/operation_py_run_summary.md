@@ -1,6 +1,7 @@
 # operation.py 运行摘要
 
 - 运行入口：`operation.py`
+- 说明：该文件保留完整研究流程脚本的历史运行摘要；当前 README / GitHub 展示建议优先引用 `run_final_report.py` 导出的 `reports/final_*`。
 - Python 路径：`/home/father_yuyue/projects/Kaggle_GiveMeSomeCredits/.venv/bin/python`
 - Python 版本：`3.13.13`
 - pandas：`2.3.3`
