@@ -3,12 +3,25 @@ from pipeline import *
 from visualization import *
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
-from IPython.display import display
-import warnings
 
+import platform
+system = platform.system()
+
+if system == "Windows":
+    plt.rcParams["font.sans-serif"] = ["SimHei", "Microsoft YaHei", "DejaVu Sans"]
+elif system == "Linux":
+    plt.rcParams["font.sans-serif"] = ["Noto Sans CJK SC", "WenQuanYi Micro Hei", "DejaVu Sans"]
+elif system == "Darwin":  # macOS
+    plt.rcParams["font.sans-serif"] = ["PingFang SC", "Heiti SC", "Arial Unicode MS", "DejaVu Sans"]
+else:
+    plt.rcParams["font.sans-serif"] = ["DejaVu Sans"]
+
+plt.rcParams["axes.unicode_minus"] = False
+
+import warnings
+import logging
 warnings.filterwarnings('ignore') # 忽略警告信息
-plt.rcParams['font.sans-serif'] = ['SimHei'] # 设置中文显示
-plt.rcParams['axes.unicode_minus'] = False
+logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)
 
 """ 早期准备 """ 
 # region
