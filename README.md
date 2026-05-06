@@ -129,6 +129,7 @@
 
 - Windows Python 3.13 环境完整重跑后的 `operation_full_output.ipynb` 及其导出文件构成完整实验归档
 - 当前标准 Python 3.13 `.venv` 环境下运行 `operation.py`，也已支持将核心结果输出到 `reports/`
+- 最终用于横向比较的 XGBoost 采用前序调参确定的固定最佳参数组合重新拟合，测试集仅用于最终评估
 - 两套可信结果来源整体一致，轻微数值差异不影响主结论
 
 ## 模型评估指标

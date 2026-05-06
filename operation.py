@@ -1444,12 +1444,10 @@ if is_processing_here6:
         **best_para_xgb_dict,
         random_state=500,
         eval_metric='auc',
-        early_stopping_rounds=20,
         use_label_encoder=False
     ) # 设置XGBoost参数
     xgb_model.fit(
         X_train_xgb, y_train,
-        eval_set=[(X_test_xgb, y_test)],
         verbose=False
     ) # 拟合模型
     # endregion
