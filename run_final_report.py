@@ -133,7 +133,6 @@ def write_run_summary(
     model_comparison_df: pd.DataFrame,
     f2_threshold_summary_df: pd.DataFrame,
     score_bins_export_df: pd.DataFrame,
-    elapsed_seconds: float,
     plot_status: str,
     plot_note: str,
 ) -> None:
@@ -143,7 +142,9 @@ def write_run_summary(
     with open(summary_file, "w", encoding="utf-8") as f:
         f.write("# final report 运行摘要\n\n")
         f.write("- 运行入口：`run_final_report.py`\n")
-        f.write(f"- Python 路径：`{runtime_info['python_path']}`\n")
+        f.write("- Python executable：`local virtual environment`\n")
+        f.write("- Environment：`.venv`\n")
+        f.write("- Project root：`repository root`\n")
         f.write(f"- Python 版本：`{runtime_info['python_version']}`\n")
         f.write(f"- pandas：`{runtime_info['pandas']}`\n")
         f.write(f"- numpy：`{runtime_info['numpy']}`\n")
@@ -151,8 +152,8 @@ def write_run_summary(
         f.write(f"- xgboost：`{runtime_info['xgboost']}`\n")
         f.write(f"- shap：`{runtime_info['shap']}`\n")
         f.write(f"- statsmodels：`{runtime_info['statsmodels']}`\n")
-        f.write(f"- 耗时（秒）：`{elapsed_seconds:.2f}`\n")
         f.write("- 说明：该脚本跳过所有 grid search / 特征搜索 / 参数搜索，仅复用已定稿常量完成最终模型训练与结果导出。\n")
+        f.write("- 说明：该文件有意省略本机绝对路径与逐次变化的秒级耗时，避免产生与结果无关的展示差异。\n")
         f.write("- 说明：最终 XGBoost 拟合未使用 `eval_set=[(X_test_xgb, y_test)]`，也未使用 test-set early stopping。\n")
         f.write("\n## 输出文件\n\n")
         for file_path in output_files:
@@ -645,12 +646,10 @@ def main() -> None:
         source_desc="run_final_report.py 评分卡分箱结果（train / test）",
     )
 
-    elapsed_seconds = time.perf_counter() - start_time
     write_run_summary(
         model_comparison_df=model_comparison_df,
         f2_threshold_summary_df=f2_threshold_summary_df,
         score_bins_export_df=score_bins_export_df,
-        elapsed_seconds=elapsed_seconds,
         plot_status="skipped",
         plot_note="为缩短 final-only 复现耗时，本脚本当前只导出 CSV / Markdown 结果，不生成新的模型效果图。",
     )

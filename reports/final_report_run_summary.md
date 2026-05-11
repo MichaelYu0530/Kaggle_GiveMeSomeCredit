@@ -1,7 +1,9 @@
 # final report 运行摘要
 
 - 运行入口：`run_final_report.py`
-- Python 路径：`/home/father_yuyue/projects/Kaggle_GiveMeSomeCredits/.venv/bin/python`
+- Python executable：`local virtual environment`
+- Environment：`.venv`
+- Project root：`repository root`
 - Python 版本：`3.13.13`
 - pandas：`2.3.3`
 - numpy：`2.2.6`
@@ -9,8 +11,8 @@
 - xgboost：`3.2.0`
 - shap：`0.50.0`
 - statsmodels：`0.14.6`
-- 耗时（秒）：`36.30`
 - 说明：该脚本跳过所有 grid search / 特征搜索 / 参数搜索，仅复用已定稿常量完成最终模型训练与结果导出。
+- 说明：该文件有意省略本机绝对路径与逐次变化的秒级耗时，避免产生与结果无关的展示差异。
 - 说明：最终 XGBoost 拟合未使用 `eval_set=[(X_test_xgb, y_test)]`，也未使用 test-set early stopping。
 
 ## 输出文件

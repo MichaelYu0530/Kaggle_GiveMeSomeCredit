@@ -4,6 +4,12 @@
 >
 > 该文件是结果归档文件，不建议直接重新运行全部单元格，否则可能覆盖当前保存的输出结果。
 >
+> `reports/final_*` 是当前最终对外 `headline metrics` 的权威来源。
+>
+> 本文件与 `operation_full_output.ipynb` / `operation.py` 导出结果属于研究流程 / notebook 路径归档，保留探索性流程、调参过程与人工定稿路径结果。
+>
+> 若本文件中的局部指标与 `reports/final_*` 不完全一致，请以 `reports/final_model_comparison.md` 为最终对外模型对比口径。
+>
 > 如需复现实验流程，请优先运行 `run_final_report.py`，并查看 `reports/final_*` 结果文件。
 >
 > 如需查看完整研究/调参流程，请参考 `operation.py` 或 `operation.ipynb`。

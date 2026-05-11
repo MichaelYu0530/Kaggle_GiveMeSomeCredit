@@ -1,8 +1,12 @@
 # operation.py 运行摘要
 
 - 运行入口：`operation.py`
-- 说明：该文件保留完整研究流程脚本的历史运行摘要；当前 README / GitHub 展示建议优先引用 `run_final_report.py` 导出的 `reports/final_*`。
-- Python 路径：`/home/father_yuyue/projects/Kaggle_GiveMeSomeCredits/.venv/bin/python`
+- 定位：`historical / research snapshot`
+- 说明：该文件保留完整研究流程脚本的历史运行摘要，用于研究归档与人工审阅；当前 README / GitHub 展示建议优先引用 `run_final_report.py` 导出的 `reports/final_*`。
+- 说明：若本文件中的局部指标与 `reports/final_*` 不完全一致，应以 `reports/final_model_comparison.md` 为最终对外模型对比口径。
+- Python executable：`local virtual environment`
+- Environment：`.venv`
+- Project root：`repository root`
 - Python 版本：`3.13.13`
 - pandas：`2.3.3`
 - numpy：`2.2.6`
