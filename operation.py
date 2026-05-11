@@ -5,10 +5,29 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from IPython.display import display
 import warnings
+import gc
 
 warnings.filterwarnings('ignore') # 忽略警告信息
 plt.rcParams['font.sans-serif'] = ['SimHei'] # 设置中文显示
 plt.rcParams['axes.unicode_minus'] = False
+
+def cleanup_vars(varnames, namespace=None, close_plots=True, verbose=False):
+    """Delete temporary variables from a namespace and trigger garbage collection."""
+    if namespace is None:
+        namespace = globals()
+    deleted = []
+    for name in varnames:
+        if name in namespace:
+            del namespace[name]
+            deleted.append(name)
+    if close_plots:
+        try:
+            plt.close('all')
+        except NameError:
+            pass
+    gc.collect()
+    if verbose and deleted:
+        print(f'Cleaned {len(deleted)} temporary variables:', deleted)
 
 """ 早期准备 """ 
 # region
@@ -238,8 +257,14 @@ negative_interactions_df = pd.DataFrame({
     ]
 })
 # 释放内存
-if 'train_data' in dir():
-    del train_data
+cleanup_vars([
+    'train_data', 'folds', 'train_idx_list',
+    'valuable_intersections_df', 'valuable_intersections_df_list',
+    'top_positive_intersections_df', 'top_negative_intersections_df',
+    'colnames_not_binary', 'colname_pairs_not_binary',
+    'div_pts', 'bins_2D',
+    'beta30', 'beta60', 'beta90',
+])
 # endregion
 
 """ 筛选值得保留的标记、一维分箱与二维分箱 """
@@ -387,6 +412,7 @@ interaction_signals_test_df = pd.DataFrame({
 passed_binary_colnames = [
     # 数据质量标记
     'blacklist_flag',
+    'income_anomaly_flag',
     # 用户行为标记
     'has_no_credit',
     'has_serious_late',
@@ -454,22 +480,31 @@ low_iv_binnames_1D = [
 # 通过筛选的二维分箱
 passed_binnames_2D = [
     'credit_x_credit_pressure_index_bin',
-    'credit_x_dep_bin',
+    'dep_x_credit_bin',
     'credit_x_monthly_debt_bin',
     'debt_x_credit_bin',
     'debt_x_credit_pressure_index_bin',
     'debt_x_monthly_debt_bin',
     'debt_x_mortgage_bin',
     'debt_x_mortgage_ratio_bin',
+    'dep_x_mortgage_bin',
     'income_x_monthly_debt_bin',
     'monthly_debt_x_credit_pressure_index_bin',
     'mortgage_x_credit_pressure_index_bin',
-    'mortgage_x_dep_bin',
     'mortgage_x_monthly_debt_bin'
 ]
 # 释放内存
-if 'train_data' in dir() and 'valid_data' in dir():
-    del train_data, valid_data
+cleanup_vars([
+    'train_data', 'valid_data', 'folds',
+    'train_idx_list', 'valid_idx_list',
+    'train_data_woe_lr',
+    'binary_columns_test_df_list', 'bins_1D_test_df_list', 'bins_2D_test_df_list',
+    'binary_columns_test_df', 'bins_1D_test_df', 'bins_2D_test_df',
+    'binary_columns_filter_df', 'bins_1D_filter_df', 'passed_bins_2D_df',
+    'colnames_binary', 'colnames_not_binary', 'colname_pairs_not_binary',
+    'iv_1D_dict', 'div_pts', 'bins_2D',
+    'beta30', 'beta60', 'beta90',
+])
 # endregion
 
 """ 对raw LR模型的调试 """
@@ -528,10 +563,12 @@ if is_processing_here3:
         train_data_raw_lr = train_data_raw_lr.clip(lower=0)
         valid_data_raw_lr = valid_data_raw_lr.clip(lower=0)
         # 添加年龄、负债率、信用额度使用率的中心化三列以及中心化的年龄*负债率、年龄*信用额度使用率两列
-        colnames_to_center = add_centered_features(train_data_raw_lr)
-        add_centered_features(valid_data_raw_lr, fixed_colnames=colnames_to_center)
+        centering_means = fit_centering_means(train_data_raw_lr)
+        apply_centered_features(train_data_raw_lr, centering_means)
+        apply_centered_features(valid_data_raw_lr, centering_means)
         # 对有长尾的指标取对数
-        colnames_to_log = add_log_features(train_data_raw_lr)
+        colnames_to_log = fit_log_feature_colnames(train_data_raw_lr)
+        add_log_features(train_data_raw_lr, fixed_colnames=colnames_to_log)
         add_log_features(valid_data_raw_lr, fixed_colnames=colnames_to_log)
         # 筛选将要投入训练的列名
         selected_colnames = select_colnames_raw_lr(train_data_raw_lr)
@@ -675,8 +712,26 @@ raw_lr_fit_goodness_after_drop_test_df = test_fit_goodness_lr_after_drop(
 colnames_to_fit_raw_lr = \
     [colname for colname in colnames_to_fit_raw_lr if colname not in colnames_to_drop_raw_lr]
 # 释放内存
-if 'train_data_raw_lr' in dir() and 'valid_data_raw_lr' in dir():
-    del train_data, valid_data, train_data_raw_lr, valid_data_raw_lr
+cleanup_vars([
+    'train_data', 'valid_data', 'train_data_copy', 'valid_data_copy',
+    'train_data_raw_lr', 'valid_data_raw_lr',
+    'X_train_raw_lr', 'X_valid_raw_lr', 'y_train', 'y_valid',
+    'folds', 'train_idx_list', 'valid_idx_list',
+    'raw_lr_fit_goodness_df_list', 'raw_lr_fit_goodness_df',
+    'raw_lr_auc_ks_df', 'raw_lr_coef_sign_stability_df',
+    'raw_lr_fit_goodness_after_drop_test_df', 'vif_test_df',
+    'centering_means', 'colnames_to_log', 'selected_colnames',
+    'colnames_not_binary', 'div_pts',
+    'original_features', 'quality_flags', 'derived_features', 'risk_signals',
+    'negative_1_5', 'positive_1_5', 'positive_6_10', 'positive_11_15',
+    'colnames_to_fit0', 'colnames_to_fit1', 'colnames_to_fit2',
+    'colnames_to_fit3', 'colnames_to_fit4', 'colnames_to_fit5',
+    'colnames_to_fit_list', 'colnames_to_fit',
+    'c_list', 'c',
+    'colnames_to_drop0', 'colnames_to_drop1', 'colnames_to_drop2',
+    'colnames_to_drop3', 'colnames_to_drop4', 'colnames_to_drop_list',
+    'beta30', 'beta60', 'beta90',
+], close_plots=False)
 # endregion
 
 """ 对WOE LR模型的调试 """
@@ -795,17 +850,17 @@ if is_processing_here4:
         # 二维分箱
         bins_2D = [
             'credit_x_credit_pressure_index_bin_woe',
-            'credit_x_dep_bin_woe',
+            'dep_x_credit_bin_woe',
             'credit_x_monthly_debt_bin_woe',
             'debt_x_credit_bin_woe',
             'debt_x_credit_pressure_index_bin_woe',
             'debt_x_monthly_debt_bin_woe',
             'debt_x_mortgage_bin_woe',
             'debt_x_mortgage_ratio_bin_woe',
+            'dep_x_mortgage_bin_woe',
             'income_x_monthly_debt_bin_woe',
             'monthly_debt_x_credit_pressure_index_bin_woe',
             'mortgage_x_credit_pressure_index_bin_woe',
-            'mortgage_x_dep_bin_woe',
             'mortgage_x_monthly_debt_bin_woe'
         ]
         # 低信息价值指标
@@ -883,17 +938,17 @@ colnames_to_fit_woe_lr = [
     'is_util_high_woe', 'is_util_overlimit_woe',
     # 二维分箱
     'credit_x_credit_pressure_index_bin_woe',
-    'credit_x_dep_bin_woe',
+    'dep_x_credit_bin_woe',
     'credit_x_monthly_debt_bin_woe',
     'debt_x_credit_bin_woe',
     'debt_x_credit_pressure_index_bin_woe',
     'debt_x_monthly_debt_bin_woe',
     'debt_x_mortgage_bin_woe',
     'debt_x_mortgage_ratio_bin_woe',
+    'dep_x_mortgage_bin_woe',
     'income_x_monthly_debt_bin_woe',
     'monthly_debt_x_credit_pressure_index_bin_woe',
     'mortgage_x_credit_pressure_index_bin_woe',
-    'mortgage_x_dep_bin_woe',
     'mortgage_x_monthly_debt_bin_woe'
 ]
 c_woe_lr = 0.025
@@ -914,8 +969,27 @@ woe_lr_fit_goodness_after_drop_test_df = test_fit_goodness_lr_after_drop(
 colnames_to_fit_woe_lr = \
     [colname for colname in colnames_to_fit_woe_lr if colname not in colnames_to_drop_woe_lr]
 # 释放内存
-if 'train_data_woe_lr' in dir() and 'valid_data_woe_lr' in dir():
-    del train_data, valid_data, train_data_woe_lr, valid_data_woe_lr
+cleanup_vars([
+    'train_data', 'valid_data', 'train_data_copy', 'valid_data_copy',
+    'train_data_woe_lr', 'valid_data_woe_lr',
+    'X_train_woe_lr', 'X_valid_woe_lr', 'y_train', 'y_valid',
+    'folds', 'train_idx_list', 'valid_idx_list',
+    'woe_lr_fit_goodness_df_list', 'woe_lr_fit_goodness_df',
+    'woe_lr_auc_ks_df', 'woe_lr_coef_sign_stability_df',
+    'woe_lr_fit_goodness_after_drop_test_df', 'vif_test_df',
+    'colnames_not_binary', 'colname_pairs_not_binary',
+    'binnames_map_to_woe', 'woe_colnames',
+    'div_pts', 'bins_2D',
+    'original_features', 'derived_features', 'risk_signals',
+    'bins_2D', 'low_iv_features', 'positive_1_5',
+    'colnames_to_fit0', 'colnames_to_fit1', 'colnames_to_fit2',
+    'colnames_to_fit3', 'colnames_to_fit4', 'colnames_to_fit5',
+    'colnames_to_fit_list', 'colnames_to_fit',
+    'c_list', 'c',
+    'colnames_to_drop0', 'colnames_to_drop1', 'colnames_to_drop2',
+    'colnames_to_drop3', 'colnames_to_drop_list',
+    'woe_map', 'beta30', 'beta60', 'beta90',
+], close_plots=False)
 # endregion
 
 """ 对XGBoost模型的调试 """
@@ -1149,8 +1223,33 @@ best_para_xgb_dict = dict(
     reg_lambda = 2
 )
 # 释放内存
-if 'train_data_xgb' in dir() and 'valid_data_xgb' in dir():
-    del train_data, valid_data, train_data_xgb, valid_data_xgb
+cleanup_vars([
+    'train_data', 'valid_data', 'train_data_copy', 'valid_data_copy',
+    'train_data_xgb', 'valid_data_xgb',
+    'X_train_xgb', 'X_valid_xgb', 'y_train', 'y_valid',
+    'folds', 'train_idx_list', 'valid_idx_list',
+    'xgb_auc_ks_round1_df_list', 'xgb_top_recall_df_list',
+    'xgb_auc_ks_round2_df_list', 'xgb_auc_ks_round3_df_list',
+    'xgb_auc_ks_round4_df_list', 'xgb_auc_ks_round5_df_list',
+    'xgb_auc_ks_round1_df', 'xgb_top_recall_df',
+    'xgb_auc_ks_round2_df', 'xgb_auc_ks_round3_df',
+    'xgb_auc_ks_round4_df', 'xgb_auc_ks_round5_df',
+    'xgb_top_recall_aggregate_df',
+    'colnames_not_binary', 'div_pts',
+    'original_features', 'quality_flags', 'derived_features', 'risk_signals',
+    'negative_1_5', 'positive_1_5', 'positive_6_10',
+    'colnames_to_fit0', 'colnames_to_fit1', 'colnames_to_fit2',
+    'colnames_to_fit3', 'colnames_to_fit4', 'colnames_to_fit5',
+    'colnames_to_fit_list_round1', 'colnames_to_fit',
+    'derived_features_retained',
+    'paras_round2', 'paras_round3', 'paras_round4', 'paras_round5',
+    'max_depth_list', 'min_child_weight_list',
+    'learning_rate_list', 'n_estimators_list',
+    'subsample_list', 'colsample_bytree_list',
+    'reg_alpha_list', 'reg_lambda_list',
+    'best_para_dict',
+    'beta30', 'beta60', 'beta90',
+], close_plots=False)
 # endregion
 
 """ 使用各模型的最佳参数组合，以原训练集与验证集的并集做拟合，观察在测试集中的拟合效果 """
@@ -1198,10 +1297,12 @@ if is_processing_here6:
     train_data_raw_lr = train_data_raw_lr.clip(lower=0)
     test_data_raw_lr = test_data_raw_lr.clip(lower=0)
     # 添加年龄、负债率、信用额度使用率的中心化三列以及中心化的年龄*负债率、年龄*信用额度使用率两列
-    colnames_to_center = add_centered_features(train_data_raw_lr)
-    add_centered_features(test_data_raw_lr, fixed_colnames=colnames_to_center)
+    centering_means = fit_centering_means(train_data_raw_lr)
+    apply_centered_features(train_data_raw_lr, centering_means)
+    apply_centered_features(test_data_raw_lr, centering_means)
     # 对有长尾的指标取对数
-    colnames_to_log = add_log_features(train_data_raw_lr)
+    colnames_to_log = fit_log_feature_colnames(train_data_raw_lr)
+    add_log_features(train_data_raw_lr, fixed_colnames=colnames_to_log)
     add_log_features(test_data_raw_lr, fixed_colnames=colnames_to_log)
     # 筛选将要投入训练的列名
     selected_colnames = select_colnames_raw_lr(train_data_raw_lr)
@@ -1321,4 +1422,19 @@ if is_processing_here6:
         X_test_raw_lr, X_test_woe_lr, X_test_xgb,
         raw_lr_model, sc_model, xgb_model
     )
+    cleanup_vars([
+        'train_data_raw_lr', 'test_data_raw_lr',
+        'train_data_woe_lr', 'test_data_woe_lr',
+        'train_data_xgb', 'test_data_xgb',
+        'X_train_raw_lr', 'X_test_raw_lr',
+        'X_train_woe_lr', 'X_test_woe_lr',
+        'X_train_xgb', 'X_test_xgb',
+        'y_train', 'y_test',
+        'score_bins_train_df', 'score_bins_test_df',
+        'centering_means', 'colnames_to_log', 'selected_colnames',
+        'colnames_not_binary', 'colname_pairs_not_binary',
+        'binnames_map_to_woe', 'woe_colnames',
+        'div_pts', 'bins_2D',
+        'beta30', 'beta60', 'beta90',
+    ], close_plots=False)
     # endregion

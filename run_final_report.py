@@ -257,6 +257,7 @@ negative_interactions_df = pd.DataFrame({
 
 passed_binary_colnames = [
     "blacklist_flag",
+    "income_anomaly_flag",
     "has_no_credit",
     "has_serious_late",
     "has_short_late",
@@ -324,7 +325,7 @@ low_iv_binnames_1D = [
 
 passed_binnames_2D = [
     "credit_x_credit_pressure_index_bin",
-    "credit_x_dep_bin",
+    "dep_x_credit_bin",
     "credit_x_monthly_debt_bin",
     "debt_x_credit_bin",
     "debt_x_credit_pressure_index_bin",
@@ -334,7 +335,7 @@ passed_binnames_2D = [
     "income_x_monthly_debt_bin",
     "monthly_debt_x_credit_pressure_index_bin",
     "mortgage_x_credit_pressure_index_bin",
-    "mortgage_x_dep_bin",
+    "dep_x_mortgage_bin",
     "mortgage_x_monthly_debt_bin",
 ]
 
@@ -385,7 +386,7 @@ colnames_to_fit_woe_lr = [
     "is_debt_overlimit_woe",
     "is_util_high_woe",
     "is_util_overlimit_woe",
-    "credit_x_dep_bin_woe",
+    "dep_x_credit_bin_woe",
     "credit_x_monthly_debt_bin_woe",
     "debt_x_credit_bin_woe",
     "debt_x_credit_pressure_index_bin_woe",
@@ -393,7 +394,7 @@ colnames_to_fit_woe_lr = [
     "debt_x_mortgage_bin_woe",
     "debt_x_mortgage_ratio_bin_woe",
     "income_x_monthly_debt_bin_woe",
-    "mortgage_x_dep_bin_woe",
+    "dep_x_mortgage_bin_woe",
     "mortgage_x_monthly_debt_bin_woe",
 ]
 c_woe_lr = 0.025
@@ -479,9 +480,11 @@ def main() -> None:
     test_data_raw_lr = test_data.copy()
     train_data_raw_lr = train_data_raw_lr.clip(lower=0)
     test_data_raw_lr = test_data_raw_lr.clip(lower=0)
-    colnames_to_center = add_centered_features(train_data_raw_lr)
-    add_centered_features(test_data_raw_lr, fixed_colnames=colnames_to_center)
-    colnames_to_log = add_log_features(train_data_raw_lr)
+    centering_means = fit_centering_means(train_data_raw_lr)
+    apply_centered_features(train_data_raw_lr, centering_means)
+    apply_centered_features(test_data_raw_lr, centering_means)
+    colnames_to_log = fit_log_feature_colnames(train_data_raw_lr)
+    add_log_features(train_data_raw_lr, fixed_colnames=colnames_to_log)
     add_log_features(test_data_raw_lr, fixed_colnames=colnames_to_log)
     selected_colnames = select_colnames_raw_lr(train_data_raw_lr)
     train_data_raw_lr = train_data_raw_lr[selected_colnames]

@@ -30,9 +30,12 @@ Kaggle_GiveMeSomeCredits/
 ├── pipeline.py
 ├── run_final_report.py
 ├── reports/
+│   ├── final_f2_threshold_summary.csv
 │   ├── final_f2_threshold_summary.md
+│   ├── final_model_comparison.csv
 │   ├── final_model_comparison.md
 │   ├── final_report_run_summary.md
+│   ├── final_scorecard_bins.csv
 │   ├── final_scorecard_bins.md
 │   ├── f2_threshold_summary_from_operation_py.md
 │   ├── model_comparison_from_operation_py.md
@@ -40,10 +43,10 @@ Kaggle_GiveMeSomeCredits/
 │   ├── operation_full_output.md
 │   ├── operation_full_output_files/
 │   │   └── reports/
-│   │       ├── operation_full_output_2_0.png
-│   │       ├── operation_full_output_46_0.png
-│   │       ├── operation_full_output_46_1.png
-│   │       └── operation_full_output_46_2.png
+│   │       ├── operation_full_output_3_0.png
+│   │       ├── operation_full_output_47_0.png
+│   │       ├── operation_full_output_47_1.png
+│   │       └── operation_full_output_47_2.png
 │   ├── operation_py_run_summary.md
 │   ├── RESULTS_SUMMARY.md
 │   └── scorecard_bins_from_operation_py.md
@@ -73,9 +76,9 @@ Kaggle_GiveMeSomeCredits/
   - 属于核心代码文件
 
 - `operation.py`
-  - 实验主脚本
+  - 研究流程脚本 / notebook 脚本化版本
   - 按顺序组织完整项目流程，包括数据探索、变量筛选、模型训练、最终比较和结果导出
-  - 属于核心代码文件
+  - 包含人工定稿常量与探索性模块，不作为最终对外指标的唯一权威入口
 
 - `run_final_report.py`
   - final-only 快速复现脚本
@@ -90,7 +93,7 @@ Kaggle_GiveMeSomeCredits/
 
 - `operation_full_output.ipynb`
   - 完整重跑后的结果版 notebook
-  - 保留历史完整实验上下文
+  - 保留完整研究流程归档、探索性分析、调参输出与 notebook 路径结果
   - 适合作为研究流程归档与补充材料
 
 ### 数据文件
@@ -133,12 +136,12 @@ Kaggle_GiveMeSomeCredits/
 ### 结果文件与输出目录
 
 - `reports/operation_full_output.md`
-  - `operation_full_output.ipynb` 导出的 Markdown 结果文件
-  - 当前最终模型结果的重要文本依据
+  - `operation_full_output.ipynb` 导出的 Markdown 归档文件
+  - 用于保留完整研究流程与 notebook 路径输出，不作为最终对外指标的标准口径
 
 - `reports/operation_full_output.html`
   - `operation_full_output.ipynb` 导出的 HTML 结果文件
-  - 适合直接浏览完整 notebook 输出
+  - 适合直接浏览完整 notebook 输出与研究归档
 
 - `reports/operation_full_output_files/`
   - notebook 导出时生成的配套资源目录
@@ -153,6 +156,7 @@ Kaggle_GiveMeSomeCredits/
 - `reports/final_scorecard_bins.md`
 - `reports/final_report_run_summary.md`
   - `run_final_report.py` 导出的 final-only 主结果文件
+  - 是当前对外引用最终指标时的标准结果口径
   - 适合作为 README、简历和 GitHub 展示时的直接引用来源
 
 - `reports/model_comparison_from_operation_py.md`
@@ -188,8 +192,8 @@ Kaggle_GiveMeSomeCredits/
   - 后续可视需要进一步区分“实验记录版”和“对外展示版”
 
 - `operation.py`
-  - 当前定位为完整研究/调参入口
-  - 日常快速复现更建议使用 `run_final_report.py`
+  - 当前定位为完整研究/调参脚本
+  - 日常快速复现和对外结果引用更建议使用 `run_final_report.py`
 
 - `backup/`
   - 从目录命名看属于数据备份
@@ -201,6 +205,8 @@ Kaggle_GiveMeSomeCredits/
 2. `reports/RESULTS_SUMMARY.md`
 3. `reports/final_model_comparison.md`
 4. `reports/final_f2_threshold_summary.md`
-5. `operation_full_output.ipynb`
-6. `reports/operation_full_output.md`
-7. `pipeline.py`、`analysis.py`、`visualization.py`、`operation.py`、`run_final_report.py`
+5. `reports/final_scorecard_bins.md`
+6. `reports/final_report_run_summary.md`
+7. `operation_full_output.ipynb`
+8. `reports/operation_full_output.md`
+9. `pipeline.py`、`analysis.py`、`visualization.py`、`operation.py`、`run_final_report.py`

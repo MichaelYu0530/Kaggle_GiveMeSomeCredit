@@ -17,21 +17,21 @@
 - `reports/final_*` 是当前 final-only 复现脚本 `run_final_report.py` 导出的主结果文件；
 - `operation_full_output.ipynb` 及其 `.md` / `.html` 导出文件保留了完整 notebook 输出；
 - `operation.py` 导出的 `reports/` 文件保留为完整研究流程的历史结构化输出；
-- 不同可信来源之间仅存在轻微差异，不影响主结论。
+- `reports/final_*` 是当前对外引用最终指标时的标准口径；`operation_full_output.*` 用于完整研究归档与人工审阅。
 
 ## 最终模型比较结果
 
 | model | test AUC | AUC gap | test KS | KS gap |
 |---|---:|---:|---:|---:|
 | Raw LR | 0.8582 | 0.0013 | 0.5651 | -0.0045 |
-| WOE LR / ScoreCard | 0.8612 | -0.0013 | 0.5641 | -0.0056 |
+| WOE LR / ScoreCard | 0.8596 | 0.0003 | 0.5698 | -0.0041 |
 | XGBoost | 0.8662 | 0.0091 | 0.5824 | 0.0096 |
 
 ## 结果解读
 
-- `XGBoost` 的测试集 `AUC≈0.8662`、`KS≈0.5824`，三类模型中排序区分能力最佳。
-- `WOE LR / ScoreCard` 的测试集 `AUC=0.8612`、`KS=0.5641`，在保持较强效果的同时具备较好的风控解释性。
-- `Raw LR` 的测试集 `AUC≈0.8582`、`KS≈0.5651`，可作为稳健、可解释的传统基线模型。
+- `XGBoost` 的测试集 `AUC≈0.8662`、`KS≈0.5824`，整体排序能力稍优，但 `gap` 也略高。
+- `WOE LR / ScoreCard` 的测试集 `AUC≈0.8596`、`KS≈0.5698`，略低于 `XGBoost`，但兼具较好的风控解释性与稳定性。
+- `Raw LR` 的测试集 `AUC≈0.8582`、`KS≈0.5651`，可作为稳健、可解释的传统线性基线模型。
 
 ## 与 figures/ 的关系
 
@@ -43,7 +43,7 @@
 
 - 此前在 Linux / WSL 环境下进行过辅助复算。
 - 当前标准 Python 3.13 `.venv` 环境下的 `run_final_report.py` 已能快速复现最终结果，并稳定导出 `reports/final_*`。
-- 因此，README、项目报告与简历中建议优先引用本文件中的 final-only 汇总口径。
+- 因此，README、项目报告与简历中建议优先引用本文件中的 final-only 汇总口径，而不是直接引用 `operation_full_output.*` 中的局部 notebook 路径指标。
 
 ## 关于 SHAP
 

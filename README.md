@@ -26,11 +26,11 @@
 
 ## 项目技术路线
 
-项目整体流程与 `operation.py` / `operation.ipynb` 基本一致。当前项目同时保留：
+项目当前同时保留三个不同定位的入口：
 
-- `operation.py` / `operation.ipynb` 对应的完整研究与调参流程
-- `operation_full_output.ipynb` 及其导出文件，对应历史完整 notebook 归档
-- `run_final_report.py` 对应的 final-only 复现入口，用于快速复现最终三模型结果并导出 `reports/final_*`
+- `run_final_report.py`：当前 final model reproduction 的权威入口，用于快速复现最终三模型结果并导出 `reports/final_*`
+- `operation_full_output.ipynb` 及其 `.md` / `.html` 导出文件：完整研究流程归档，保留探索性分析、特征筛选、调参与 notebook 路径下的完整输出
+- `operation.py` / `operation.ipynb`：研究流程脚本与实验 notebook，对应完整研究与调参过程，不作为最终对外指标的唯一权威入口
 
 1. 导入原始数据并完成基础 EDA
 2. 识别缺失值、特殊编码和极端值
@@ -132,11 +132,20 @@
 
 说明：
 
-- `operation.py` 主要承担完整研究与调参流程，不作为日常快速复现入口
-- `run_final_report.py` 是当前推荐复现入口，会直接导出最终模型比较、F2 阈值摘要、评分卡分箱和运行摘要
-- `operation_full_output.ipynb` 及其 `.md` / `.html` 导出文件继续保留完整历史实验上下文
+- `run_final_report.py` 是当前推荐复现入口，也是对外引用最终指标时的标准入口
+- `operation_full_output.ipynb` 及其 `.md` / `.html` 导出文件继续保留完整研究归档，适合人工审阅特征筛选、调参与 notebook 路径输出
+- `operation.py` 主要承担完整研究与调参流程，不作为日常快速复现入口，也不应被视为比 `run_final_report.py` 更权威的 final report 入口
 - final-only 脚本中的最终 XGBoost 拟合不使用 `eval_set=[(X_test_xgb, y_test)]`，也不使用 `early_stopping_rounds`
-- 不同可信来源之间只存在轻微数值差异，不影响主结论
+- `reports/final_*` 用于对外引用最终指标；`operation_full_output.*` 用于展示完整研究过程，局部指标若与 `final_*` 不完全相同，应理解为不同定位的归档产物而不是同一张最终结果表
+
+## 数据泄漏防控
+
+当前项目的最终主流程已明确区分训练侧拟合与验证/测试侧应用：
+
+- `Raw LR` 中，中心化均值在训练侧拟合，验证/测试侧只复用同一组均值；对数特征列也由训练侧决定，验证/测试侧只复用该列名集合
+- `WOE LR` 中，`WOE`、一维分箱、二维分箱以及 `late_severity_score` 等从数据中学习的统计量，都在训练集或交叉验证训练折上拟合
+- 验证集与测试集只应用训练侧得到的映射、切分点和权重，不参与任何 `fit` 或统计量学习
+- `XGBoost` 使用训练侧特征工程结果，不使用测试标签进行特征筛选或参数选择
 
 ## 模型评估指标
 
@@ -158,7 +167,7 @@
 | model | test AUC | AUC gap | test KS | KS gap |
 |---|---:|---:|---:|---:|
 | Raw LR | 0.8582 | 0.0013 | 0.5651 | -0.0045 |
-| WOE LR / ScoreCard | 0.8612 | -0.0013 | 0.5641 | -0.0056 |
+| WOE LR / ScoreCard | 0.8596 | 0.0003 | 0.5698 | -0.0041 |
 | XGBoost | 0.8662 | 0.0091 | 0.5824 | 0.0096 |
 
 如需引用结果，请优先以：
@@ -168,7 +177,7 @@
 - `reports/final_scorecard_bins.md`
 - `reports/final_report_run_summary.md`
 
-其中 `reports/final_*` 适合 README、简历和 GitHub 展示时直接引用；`operation_full_output.ipynb` / `.md` / `.html` 与 `operation.py` 导出的旧 `reports/` 更适合作为研究流程与历史结果归档；`figures/` 主要作为辅助展示材料。
+其中 `reports/final_*` 适合 README、简历和 GitHub 展示时直接引用；`operation_full_output.ipynb` / `.md` / `.html` 更适合作为完整研究流程归档；`operation.py` 导出的历史 `reports/` 更适合作为脚本路径下的辅助归档；`figures/` 主要作为辅助展示材料。
 
 ## 项目亮点
 
@@ -188,6 +197,17 @@
 - `figures/` 当前仅保留主线展示图片
 
 当前仍有进一步优化空间，例如 README 展示优化、脚本职责继续拆分和轻量测试补充。
+
+## 模型结论
+
+- `XGBoost` 在当前最终结果中取得了最高的 `AUC` 和 `KS`，整体排序能力稍优，但 `train-valid/test gap` 也略高，可视为非线性强模型和性能上限参考
+- `WOE LR / ScoreCard` 的 `AUC` / `KS` 略低于 `XGBoost`，但解释性、稳定性和评分卡表达更适合风控场景，适合作为信用评分卡 / 风控解释性模型
+- `Raw LR` 作为原始数值与人工特征工程的线性基线，表现稳定，但非线性表达能力弱于 `XGBoost`，整体结果也略低于 `WOE LR / ScoreCard`
+
+## 模型定稿说明
+
+- `Raw LR` 与 `WOE LR` 的最终方案并不机械追求单一验证指标第一名；当更复杂的特征组合只带来很小的边际收益时，最终方案会综合考虑 `AUC / KS`、`gap`、`VIF`、系数符号稳定性和业务解释性
+- `XGBoost` 参数搜索采用多轮顺序网格搜索。由于前一轮定稿参数会影响后一轮搜索空间，且领先参数组合之间的 `AUC / KS` 差距较小，最终参数不是机械采用每轮表格第一名，而是综合考虑验证集表现、`train-valid gap`、模型复杂度、正则化强度和稳定性后的人工定稿配置
 
 详细待办见 [TODO.md](./TODO.md)。
 
@@ -234,8 +254,15 @@
 - `run_final_report.py` 导出的 `reports/final_*` 文件
 - Windows Python 3.13 环境完整重跑后的 `operation_full_output.ipynb` 及其导出文件
 - 当前标准 Python 3.13 `.venv` 环境下的 final-only 结果建议作为 README、简历和 GitHub 展示的主引用口径
-- `Raw LR`、`WOE LR / ScoreCard`、`XGBoost` 三类模型均已完成比较，其中 `XGBoost` 的测试集表现约为 `AUC=0.8662`、`KS=0.5824`，排序区分能力最佳；`WOE LR / ScoreCard` 的测试集表现约为 `AUC=0.8612`、`KS=0.5641`，兼具较强效果和风控解释性
-- 早期 Linux / WSL 环境中曾出现 SHAP 或依赖兼容性问题，但这类问题不影响当前项目的 AUC、KS、F2、Gain/Lift 等核心结果引用
+- `Raw LR`、`WOE LR / ScoreCard`、`XGBoost` 三类模型均已完成比较，其中 `XGBoost` 的测试集表现约为 `AUC=0.8662`、`KS=0.5824`，整体排序能力稍优；`WOE LR / ScoreCard` 的测试集表现约为 `AUC=0.8596`、`KS=0.5698`，在性能略低于 `XGBoost` 的同时兼具较好的解释性与稳定性
+- 早期部分 Linux / WSL 环境中曾出现过 SHAP 或依赖兼容性问题，但这类问题主要影响可解释性辅助模块，不影响当前 `AUC`、`KS`、`F2`、`Gain/Lift` 等核心结果引用；当前标准 Python 3.13 `.venv` 环境下 `run_final_report.py` 已成功运行并稳定导出 `reports/final_*`
+
+## 已知限制
+
+- 当前项目没有完整的 `pytest` 测试入口
+- `operation.py` 是研究脚本，不是完全自动化 pipeline
+- `XGBoost` 最终参数为多轮顺序搜索后的人工定稿，并不保证全局最优
+- Kaggle 公开结构化数据集适合作为方法展示；真实业务落地仍需要更严格的时间外验证、监控和合规评估
 
 更详细说明见 [PROJECT_REPORT_DRAFT.md](./PROJECT_REPORT_DRAFT.md)。
 

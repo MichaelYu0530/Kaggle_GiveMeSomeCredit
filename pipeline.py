@@ -1467,35 +1467,71 @@ def sort_bins(bins: list[pd.Interval], is_reversed: bool=False) -> list:
         return sorted_bins
 
 """ raw LR特化表达函数 """
-# 新增若干列的年龄、负债率、信用额度使用率对应中心化列
-def add_centered_features(data: pd.DataFrame, fixed_colnames: list[str]=None) -> None:
+# 拟合raw LR中心化所需的均值
+def fit_centering_means(data: pd.DataFrame, fixed_colnames: list[str]=None) -> dict[str, float]:
     """
-    添加中心化特征列
+    在训练数据上拟合raw LR中心化所需的均值。
+
+    参数
+    ----------
+    data : pd.DataFrame
+        训练数据
+    fixed_colnames : list[str], default=None
+        需要中心化的列名列表，为None时默认对年龄、负债率、使用率做中心化
+
+    返回
+    ----------
+    dict[str, float]
+        每个待中心化指标对应的训练集均值
+    """
+
+    if fixed_colnames is None:
+        colnames = [age, debt, util]
+    else:
+        colnames = fixed_colnames
+
+    centering_means = {}
+    for colname in colnames:
+        if colname == age:
+            mask_reliable = data[colname] >= 18
+        elif colname == debt:
+            mask_reliable = (data['single_missing_flag'] == 0) & (data['both_missing_flag'] == 0) & \
+                (data['debt_anomaly_flag'] == 0)
+        elif colname == util:
+            mask_reliable = data['util_anomaly_flag'] == 0
+        else:
+            raise ValueError(f"In function fit_centering_means: unsupported column {colname}.")
+
+        centering_means[colname] = data.loc[mask_reliable, colname].mean()
+
+    return centering_means
+
+
+# 新增若干列的年龄、负债率、信用额度使用率对应中心化列
+def apply_centered_features(data: pd.DataFrame, centering_means: dict[str, float]) -> list[str]:
+    """
+    将训练集拟合好的中心化均值应用到任意数据集。
     
     中心化公式
     ----------
-    col_centered = col - mean(col)  （可靠样本的均值）
+    col_centered = col - mean_train(col)  （训练集可靠样本的均值）
     不可靠样本的中心化列赋值为0
     
     参数
     ----------
     data : pd.DataFrame
-        包含原始指标的数据集
-    fixed_colnames : list[str], default=None
-        需要中心化的列名列表，为None时默认对年龄、负债率、使用率做中心化
+        待处理数据集
+    centering_means : dict[str, float]
+        训练集拟合得到的中心化均值
     
     返回
     ----------
-    None
-        无返回值，直接修改原数据框，添加 {base}_centered 列
-        若对年龄中心化，还会添加 age_centered_*_{base}_centered 交互项
+    list[str]
+        实际参与中心化的列名列表
     """
-	
-    if fixed_colnames is None:
-        colnames = [age, debt, util]
-    else:
-        colnames = fixed_colnames
-    
+
+    colnames = list(centering_means.keys())
+
     for colname in colnames:
         binbase = colnames_abbr_map.get(colname, colname)
         colname_centered = f'{binbase}_centered'
@@ -1507,16 +1543,47 @@ def add_centered_features(data: pd.DataFrame, fixed_colnames: list[str]=None) ->
                 (data['debt_anomaly_flag'] == 0)
         elif colname == util:
             mask_reliable = data['util_anomaly_flag'] == 0
-        reliable_mean = data.loc[mask_reliable, colname].mean() # 可靠样本中的均值
+        else:
+            raise ValueError(f"In function apply_centered_features: unsupported column {colname}.")
+        reliable_mean = centering_means[colname]
         
-        # 将不可靠样本的中心化列中的数据赋值为0
+        # 验证集/测试集只复用训练集均值，不重新fit中心化统计量
         data[colname_centered] = (data[colname] - reliable_mean).where(mask_reliable, 0)
         if colname != age:
             colname_multiplied = f'age_centered_*_{binbase}_centered'
             data[colname_multiplied] = data['age_centered'] * data[colname_centered]
     
-    colnames_to_center = colnames
-    return colnames_to_center
+    return colnames
+
+
+# 新增若干列的年龄、负债率、信用额度使用率对应中心化列
+def add_centered_features(data: pd.DataFrame, fixed_colnames: list[str]=None) -> list[str]:
+    """
+    兼容旧调用的中心化入口：在当前数据上拟合并应用中心化。
+    仅适合训练数据；验证集/测试集请使用 fit_centering_means + apply_centered_features。
+    """
+
+    centering_means = fit_centering_means(data, fixed_colnames=fixed_colnames)
+    return apply_centered_features(data, centering_means)
+
+
+# 在训练数据上确定raw LR需要取对数的列
+def fit_log_feature_colnames(data: pd.DataFrame, fixed_colnames: list[str]=None) -> list[str]:
+    """
+    在训练数据上确定需要取对数的列。
+    """
+
+    if fixed_colnames is None:
+        colnames = data.columns.tolist()
+    else:
+        colnames = fixed_colnames
+
+    colnames_to_log = []
+    for colname in colnames:
+        if pd.api.types.is_numeric_dtype(data[colname]) and data[colname].max() > 200:
+            colnames_to_log.append(colname)
+
+    return colnames_to_log
 
 # 将有长尾的指标取对数（实际上是log1p）
 def add_log_features(data: pd.DataFrame, fixed_colnames: list[str]=None) -> list[str]:
@@ -1541,19 +1608,19 @@ def add_log_features(data: pd.DataFrame, fixed_colnames: list[str]=None) -> list
     """
 	
     if fixed_colnames is None:
-        colnames = data.columns.tolist()
+        colnames_to_log = fit_log_feature_colnames(data)
     else:
-        colnames = fixed_colnames
-    
-    colnames_to_log = []
-    for colname in colnames:
-        if pd.api.types.is_numeric_dtype(data[colname]) and data[colname].max() > 200:
-            colnames_to_log.append(colname)
-            
-            binbase = colnames_abbr_map.get(colname, colname)
-            colname_logged = f'{binbase}_log' # 对数变换指标的列名
-            data[colname_logged] = np.log1p(data[colname])
-    
+        colnames_to_log = fixed_colnames
+
+    for colname in colnames_to_log:
+        if not pd.api.types.is_numeric_dtype(data[colname]):
+            raise ValueError(f"In function add_log_features: {colname} must be numeric.")
+
+        binbase = colnames_abbr_map.get(colname, colname)
+        colname_logged = f'{binbase}_log' # 对数变换指标的列名
+        # 验证集/测试集无条件复用训练集已确定的log特征列表
+        data[colname_logged] = np.log1p(data[colname])
+
     return colnames_to_log
 
 # 筛选投入训练的列名，用变换后的指标替代原指标
@@ -2568,7 +2635,7 @@ def grid_search_colnames_upgraded_xgb(
     
     # 只考虑保留SHAP importance排名高的指标
     shap_df = calculate_shap_importance(xgb_model_all, X_valid[colnames_to_fit_all])
-    top_colnames = shap_df.loc[0: min_shap_importance_rank, 'feature']
+    top_colnames = shap_df.iloc[:min_shap_importance_rank]['feature']
     colnames_to_consider = [colname for colname in top_colnames if colname in colnames_to_try]
     
     # 构建只有基础固定指标参与拟合的XGBoost，后称基础模型
@@ -2839,13 +2906,13 @@ def quantify_model_comparison(
     auc_test_raw_lr, ks_test_raw_lr = calculate_auc_ks(y_test, y_prob_test_raw_lr)
     auc_gap_raw_lr = auc_train_raw_lr - auc_test_raw_lr
     ks_gap_raw_lr = ks_train_raw_lr - ks_test_raw_lr
-    # WOE LR的AUC与KS（KS为基于评分的KS）
-    auc_train_woe_lr = sc_model.get_auc(X_train_woe_lr, y_train)
-    ks_train_score_based = sc_model.get_ks_score_based(X_train_woe_lr, y_train)
-    auc_test_woe_lr = sc_model.get_auc(X_test_woe_lr, y_test)
-    ks_test_score_based = sc_model.get_ks_score_based(X_test_woe_lr, y_test)
+    # WOE LR的AUC与KS：主比较表统一使用连续预测概率的KS口径
+    y_prob_train_woe_lr = sc_model.predict_proba(X_train_woe_lr)[:, 1]
+    y_prob_test_woe_lr = sc_model.predict_proba(X_test_woe_lr)[:, 1]
+    auc_train_woe_lr, ks_train_woe_lr = calculate_auc_ks(y_train, y_prob_train_woe_lr)
+    auc_test_woe_lr, ks_test_woe_lr = calculate_auc_ks(y_test, y_prob_test_woe_lr)
     auc_gap_woe_lr = auc_train_woe_lr - auc_test_woe_lr
-    ks_gap_score_based = ks_train_score_based - ks_test_score_based
+    ks_gap_woe_lr = ks_train_woe_lr - ks_test_woe_lr
     # XGBoost的AUC与KS
     y_prob_train_xgb = xgb_model.predict_proba(X_train_xgb)[: , 1] # 训练集预测概率
     y_prob_test_xgb = xgb_model.predict_proba(X_test_xgb)[: , 1] # 测试集预测概率
@@ -2858,8 +2925,8 @@ def quantify_model_comparison(
         'model': ['raw LR', 'WOE LR', 'XGBoost'],
         'test AUC': [auc_test_raw_lr, auc_test_woe_lr, auc_test_xgb],
         'AUC gap': [auc_gap_raw_lr, auc_gap_woe_lr, auc_gap_xgb],
-        'test KS': [ks_test_raw_lr, ks_test_score_based, ks_test_xgb],
-        'KS gap': [ks_gap_raw_lr, ks_gap_score_based, ks_gap_xgb]
+        'test KS': [ks_test_raw_lr, ks_test_woe_lr, ks_test_xgb],
+        'KS gap': [ks_gap_raw_lr, ks_gap_woe_lr, ks_gap_xgb]
     })
     
     return model_comparison_df

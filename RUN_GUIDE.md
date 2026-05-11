@@ -5,7 +5,7 @@
 - 推荐 Python 版本：`3.13`
 - 标准虚拟环境目录：`.venv`
 - 推荐日常复现入口：`run_final_report.py`
-- `operation.py` 是完整研究/调参流程，运行耗时较长，不作为日常快速复现入口
+- `operation.py` 是完整研究/调参流程，运行耗时较长，不作为日常快速复现入口，也不作为最终对外指标的唯一权威入口
 - 如仅用于阅读结果和准备作品集，优先查看 `reports/final_*` 与历史 notebook 导出文件
 
 ## 创建虚拟环境
@@ -54,9 +54,9 @@ reports/final_report_run_summary.md
 
 原因：
 
-- `reports/final_*` 是当前 final-only 复现脚本生成的主结果文件
+- `reports/final_*` 是当前 final-only 复现脚本生成的主结果文件，也是对外引用最终指标时的标准口径
 - 它们适合直接查看最终模型比较、F2 阈值摘要和评分卡分箱
-- `operation_full_output.ipynb` / `.md` / `.html` 继续保留完整历史实验上下文
+- `operation_full_output.ipynb` / `.md` / `.html` 继续保留完整研究归档与 notebook 路径输出
 - 比直接运行完整研究脚本更适合当前作品集展示和日常结果复核
 
 如果已注册 kernel，例如 `Python (gmsc)`，可直接在 Jupyter Notebook 或 VS Code 中打开。
@@ -74,6 +74,7 @@ reports/final_report_run_summary.md
 - 该脚本会跳过 `operation.py` 中耗时的 grid search / 特征搜索 / 参数搜索
 - 直接复用已定稿特征列表和参数字典，训练最终三模型并导出 `reports/final_*`
 - 最终 XGBoost 拟合不使用 test-set early stopping
+- 当前 final metrics 与对外模型对比结论应优先引用这一路径导出的 `reports/final_*`
 
 完整研究入口：
 
@@ -86,6 +87,7 @@ python operation.py
 - `operation.py` 会执行更完整的研究与调参流程
 - 包含分箱、交互项构造、交叉验证、变量筛选、参数搜索和结果导出
 - 耗时明显长于 `run_final_report.py`
+- 它更适合作为研究脚本 / notebook 脚本化版本，而不是 final-only 快速复现入口
 
 ## 哪些流程可能耗时较长
 
@@ -122,7 +124,7 @@ python operation.py
 
 这意味着：
 
-- 当前推荐 Python 3.13 环境已经完成核心结果复现
+- 当前推荐 Python 3.13 环境已经完成核心结果复现，`run_final_report.py` 可稳定导出 `reports/final_*`
 - SHAP 主要属于可解释性辅助模块
 - 不影响 AUC、KS、F2、Gain/Lift、评分分箱等核心结果引用
 
@@ -141,3 +143,17 @@ python operation.py
 4. 确认理解项目后，再决定是运行 `run_final_report.py` 还是 `operation.py`
 
 如果只是为了写简历或浏览作品集，不建议第一步就执行完整训练。
+
+## 三类入口的定位
+
+- `run_final_report.py`
+  - 当前 final model reproduction 的权威入口
+  - 用于快速复现最终模型比较表、F2 阈值摘要、评分卡分箱表和运行摘要
+
+- `operation_full_output.ipynb` / `reports/operation_full_output.md` / `reports/operation_full_output.html`
+  - 完整研究流程归档
+  - 展示探索性分析、特征筛选、调参和 notebook 路径下的运行结果
+
+- `operation.py`
+  - 研究流程脚本 / notebook 脚本化版本
+  - 包含探索性模块和人工定稿常量，不应被描述成比 `run_final_report.py` 更权威的 final report 入口
