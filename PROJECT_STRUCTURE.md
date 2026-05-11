@@ -3,7 +3,7 @@
 ## 当前目录树
 
 ```text
-Kaggle_GiveMeSomeCredits/
+Kaggle_GiveMeSomeCredit/
 ├── .gitignore
 ├── .venv/
 ├── Data Dictionary.xls
