@@ -96,6 +96,7 @@
 ## 当前环境口径说明
 
 - 当前项目的主展示结果建议以 `run_final_report.py` 导出的 `reports/final_*` 为准
+- 仓库现有的 `reports/final_*` 来自模块化迁移前的运行；迁移后尚待原始数据上的数值对照
 - `operation_full_output.ipynb` / `.md` / `.html` 继续保留完整历史实验归档
 - `operation.py` 导出的 `reports/` 结果保留为完整研究流程的历史结构化输出
 - 不同可信来源之间只存在轻微差异，不影响主结论
