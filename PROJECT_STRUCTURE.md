@@ -1,6 +1,8 @@
 # 项目结构说明
 
-## 当前目录树
+> 下方目录树记录模块化迁移前的研究文件布局。现有 `gmsc/` 可导入模块、`scripts/` 运行入口和 `tests/` 的职责请以 [ARCHITECTURE.md](./ARCHITECTURE.md) 为准。根目录的 `pipeline.py`、`analysis.py`、`visualization.py` 现为兼容导入层。
+
+## 历史研究目录树
 
 ```text
 Kaggle_GiveMeSomeCredit/

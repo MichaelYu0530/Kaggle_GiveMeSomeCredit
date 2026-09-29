@@ -63,11 +63,15 @@ reports/final_report_run_summary.md
 
 ## 如何运行核心脚本
 
+模块化入口和职责说明见 [ARCHITECTURE.md](./ARCHITECTURE.md)。
+
 推荐快速复现入口：
 
 ```bash
 .venv/bin/python run_final_report.py
 ```
+
+等价的新入口：`.venv/bin/python scripts/run_final_report.py`。历史研究流程可用 `.venv/bin/python scripts/run_research.py` 运行。
 
 注意：
 

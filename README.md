@@ -42,11 +42,13 @@
 
 ## 项目结构
 
-项目当前以单目录脚本形式组织，核心文件包括：
+核心计算代码现按功能放在 `gmsc/`，可执行入口位于 `scripts/`。原 `pipeline.py`、`analysis.py`、`visualization.py` 保留为研究脚本和 notebook 的兼容导入层；模块职责与训练/评估边界见 [ARCHITECTURE.md](./ARCHITECTURE.md)。
 
-- `pipeline.py`：主数据流水线、特征工程、分箱、评分卡、模型训练与评估函数
-- `analysis.py`：统计分析、AUC/KS/PSI/IV/SHAP 等指标函数
-- `visualization.py`：EDA 与模型效果可视化
+核心文件和目录包括：
+
+- `gmsc/`：清洗、特征工程、分箱、WOE、评分卡、统计评估和绘图等可导入模块
+- `pipeline.py` / `analysis.py` / `visualization.py`：历史研究代码使用的兼容导入层
+- `scripts/`：最终复现和完整研究的运行入口
 - `operation.py`：完整研究/调参主脚本，包含较长耗时的筛选、交叉验证和参数搜索流程
 - `run_final_report.py`：final-only 快速复现入口，直接复用已定稿特征列表和参数，导出 `reports/final_*`
 - `operation.ipynb`：实验 notebook 版本
@@ -224,6 +226,8 @@
 ```bash
 .venv/bin/python run_final_report.py
 ```
+
+也可以使用新的脚本入口：`.venv/bin/python scripts/run_final_report.py`。
 
 注意：
 
