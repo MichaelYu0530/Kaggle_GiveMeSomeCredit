@@ -1,278 +1,58 @@
 # Give Me Some Credit 风控建模项目
 
-## 项目背景
+基于 Kaggle **Give Me Some Credit** 数据集，预测借款人未来两年内是否发生严重逾期（`SeriousDlqin2yrs`）。项目展示缺失与异常处理、风险特征、一维/二维分箱、WOE 评分卡、模型筛选及评估，并比较 Raw Logistic Regression、WOE Logistic Regression/ScoreCard 和 XGBoost。
 
-本项目基于 Kaggle 经典信贷风控数据集 **Give Me Some Credit**，围绕个人借款人未来两年内是否会发生严重违约的问题，搭建了一套较完整的风控建模实验流程。项目重点不在于追求单一最优算法，而在于展示从数据理解、异常处理、特征工程、分箱建模、评分卡到机器学习模型比较的全过程。
+## 结果速览
 
-该项目适合作为中文求职简历和 GitHub 作品集中的风控建模、金融科技、数据科学、机器学习方向项目。
+下表摘自仓库已有的 [最终模型比较报告](reports/final_model_comparison.md)。它是模块化迁移前的运行结果；本次代码拆分尚未在原始数据上重跑确认数值等价。
 
-## 数据集说明
-
-- 数据来源：Kaggle `Give Me Some Credit`
-- 训练集文件：`cs-training.csv`
-- 测试集文件：`cs-test.csv`
-- 数据字典：`Data Dictionary.xls`
-- 说明：原始 CSV 和 Excel 文件体积较大，且属于数据集原始材料，不建议直接上传到公开 GitHub 仓库
-
-## 业务目标
-
-目标是基于借款人的授信使用、负债、收入、家属情况、逾期历史、信贷数量等信息，预测其未来两年内是否会出现 **90 天以上严重逾期/违约**，用于风险识别、客户排序和分层管理。
-
-## 目标变量
-
-- 字段名：`SeriousDlqin2yrs`
-- 业务含义：借款人未来两年内是否发生过 `90+` 天严重逾期
-- 任务类型：不平衡二分类
-
-## 项目技术路线
-
-项目当前同时保留三个不同定位的入口：
-
-- `run_final_report.py`：当前 final model reproduction 的权威入口，用于快速复现最终三模型结果并导出 `reports/final_*`
-- `operation_full_output.ipynb` 及其 `.md` / `.html` 导出文件：完整研究流程归档，保留探索性分析、特征筛选、调参与 notebook 路径下的完整输出
-- `operation.py` / `operation.ipynb`：研究流程脚本与实验 notebook，对应完整研究与调参过程，不作为最终对外指标的唯一权威入口
-
-1. 导入原始数据并完成基础 EDA
-2. 识别缺失值、特殊编码和极端值
-3. 构造风险标记、衍生特征和交互特征
-4. 构建一维分箱、二维分箱、WOE 编码
-5. 使用 5 折分层交叉验证筛选变量与参数
-6. 比较 `Raw Logistic Regression`、`WOE Logistic Regression / ScoreCard`、`XGBoost`
-7. 输出 AUC / KS / F2 / Precision / Recall / Gain / Lift / 评分分箱等结果与可视化
-
-## 项目结构
-
-核心计算代码现按功能放在 `gmsc/`，可执行入口位于 `scripts/`。原 `pipeline.py`、`analysis.py`、`visualization.py` 保留为研究脚本和 notebook 的兼容导入层；模块职责与训练/评估边界见 [ARCHITECTURE.md](./ARCHITECTURE.md)。
-
-核心文件和目录包括：
-
-- `gmsc/`：清洗、特征工程、分箱、WOE、评分卡、统计评估和绘图等可导入模块
-- `pipeline.py` / `analysis.py` / `visualization.py`：历史研究代码使用的兼容导入层
-- `scripts/`：最终复现和完整研究的运行入口
-- `operation.py`：完整研究/调参主脚本，包含较长耗时的筛选、交叉验证和参数搜索流程
-- `run_final_report.py`：final-only 快速复现入口，直接复用已定稿特征列表和参数，导出 `reports/final_*`
-- `operation.ipynb`：实验 notebook 版本
-- `figures/`：已保存的图像结果
-
-更详细目录说明见 [PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md)。
-
-## 核心功能模块
-
-### 1. 数据读取与基础处理
-
-- 导入训练集和测试集
-- 删除无意义索引列
-- 统一列名格式
-
-### 2. 数据清洗与异常处理
-
-- `MonthlyIncome` 缺失与极低值异常处理
-- `NumberOfDependents` 缺失结构识别
-- 三类逾期变量 `96/98` 特殊编码识别
-- `RevolvingUtilizationOfUnsecuredLines` 极端值分层
-- `DebtRatio` 极端值分层
-- `Age` 异常样本删除
-
-### 3. 风险特征工程
-
-- `late_severity_score`
-- `credit_late_density`
-- `income_per_dep`
-- `monthly_debt`
-- `free_cashflow_income`
-- `credit_pressure_index`
-- 风险标记变量、行为标记变量、交互信号变量
-
-### 4. 风控建模方法
-
-- 一维分箱
-- 二维分箱
-- WOE 编码
-- IV / PSI
-- 评分卡 ScoreCard
-- KS / Lift / Gain / PR / F2
-
-## 数据清洗与特征工程
-
-项目的清洗思路偏风控建模风格，不是简单删除或均值填补，而是强调：
-
-- 将缺失与异常本身转化为风险信号
-- 将不可靠原值与正常样本分开建模
-- 尽量保留业务可解释性
-
-例如：
-
-- 用 `single_missing_flag`、`both_missing_flag` 标记收入缺失结构
-- 用 `blacklist_flag` 标记逾期变量中的特殊编码人群
-- 用 `income_anomaly_flag`、`util_anomaly_flag`、`debt_anomaly_flag` 标记明显异常值
-- 用负编码将不可靠取值单独隔离，便于后续分箱和 WOE 处理
-
-## 风控建模方法
-
-项目体现了较完整的传统风控建模能力：
-
-- 基于样本分布和业务语义进行一维分箱
-- 基于风险差异和显著性筛选二维分箱交互项
-- 对标记变量和分箱变量进行 WOE 编码
-- 使用 IV、PSI、KS、风险跨度等指标评估变量质量
-- 实现评分卡类并输出分数分箱违约率
-
-## 模型训练与比较
-
-项目当前主要比较三类模型：
-
-- `Raw Logistic Regression`
-- `WOE Logistic Regression / ScoreCard`
-- `XGBoost`
-
-代码中包含：
-
-- 5 折分层交叉验证
-- 多组特征组合比较
-- 正则化与树模型参数搜索
-- 训练集 / 验证集 gap 对比
-
-说明：
-
-- `run_final_report.py` 是当前推荐复现入口，也是对外引用最终指标时的标准入口
-- `operation_full_output.ipynb` 及其 `.md` / `.html` 导出文件继续保留完整研究归档，适合人工审阅特征筛选、调参与 notebook 路径输出
-- `operation.py` 主要承担完整研究与调参流程，不作为日常快速复现入口，也不应被视为比 `run_final_report.py` 更权威的 final report 入口
-- final-only 脚本中的最终 XGBoost 拟合不使用 `eval_set=[(X_test_xgb, y_test)]`，也不使用 `early_stopping_rounds`
-- `reports/final_*` 用于对外引用最终指标；`operation_full_output.*` 用于展示完整研究过程，局部指标若与 `final_*` 不完全相同，应理解为不同定位的归档产物而不是同一张最终结果表
-
-## 数据泄漏防控
-
-当前项目的最终主流程已明确区分训练侧拟合与验证/测试侧应用：
-
-- `Raw LR` 中，中心化均值在训练侧拟合，验证/测试侧只复用同一组均值；对数特征列也由训练侧决定，验证/测试侧只复用该列名集合
-- `WOE LR` 中，`WOE`、一维分箱、二维分箱以及 `late_severity_score` 等从数据中学习的统计量，都在训练集或交叉验证训练折上拟合
-- 验证集与测试集只应用训练侧得到的映射、切分点和权重，不参与任何 `fit` 或统计量学习
-- `XGBoost` 使用训练侧特征工程结果，不使用测试标签进行特征筛选或参数选择
-
-## 模型评估指标
-
-项目使用的主要评估指标包括：
-
-- `AUC`
-- `KS`
-- `Precision / Recall`
-- `F2`
-- `Gain`
-- `Lift`
-- `PR Curve`
-- `KS Curve`
-- 评分分箱违约率
-- `SHAP` 全局重要性
-
-当前项目最终模型比较结果如下：
-
-| model | test AUC | AUC gap | test KS | KS gap |
+| 模型 | 内部测试集 AUC | AUC gap | 内部测试集 KS | KS gap |
 |---|---:|---:|---:|---:|
 | Raw LR | 0.8582 | 0.0013 | 0.5651 | -0.0045 |
 | WOE LR / ScoreCard | 0.8596 | 0.0003 | 0.5698 | -0.0041 |
 | XGBoost | 0.8662 | 0.0091 | 0.5824 | 0.0096 |
 
-如需引用结果，请优先以：
-
-- `reports/final_model_comparison.md`
-- `reports/final_f2_threshold_summary.md`
-- `reports/final_scorecard_bins.md`
-- `reports/final_report_run_summary.md`
-
-其中 `reports/final_*` 适合 README、简历和 GitHub 展示时直接引用；`operation_full_output.ipynb` / `.md` / `.html` 更适合作为完整研究流程归档；`operation.py` 导出的历史 `reports/` 更适合作为脚本路径下的辅助归档；`figures/` 主要作为辅助展示材料。
-
-## 项目亮点
-
-- 使用风控建模思路而非仅做通用二分类建模
-- 同时覆盖传统评分卡与机器学习模型
-- 将缺失、异常值和特殊编码转化为结构化风险信号
-- 实现一维/二维分箱、WOE、IV、PSI、ScoreCard 等风控关键方法
-- 保留了较完整的可视化产物，便于展示风险分层和模型效果
-
-## 当前项目状态
-
-当前项目已经完成 **端到端建模 + 初步工程化整理**，具备 GitHub 作品集展示基础：
-
-- `operation_full_output.ipynb` / `.md` / `.html` 保留了完整实验输出归档
-- `run_final_report.py` 已支持快速复现最终模型结果并导出 `reports/final_*`
-- `reports/` 已形成“历史完整输出 + final-only 结果摘要”的双层归档
-- `figures/` 当前仅保留主线展示图片
-
-当前仍有进一步优化空间，例如 README 展示优化、脚本职责继续拆分和轻量测试补充。
-
-## 模型结论
-
-- `XGBoost` 在当前最终结果中取得了最高的 `AUC` 和 `KS`，整体排序能力稍优，但 `train-valid/test gap` 也略高，可视为非线性强模型和性能上限参考
-- `WOE LR / ScoreCard` 的 `AUC` / `KS` 略低于 `XGBoost`，但解释性、稳定性和评分卡表达更适合风控场景，适合作为信用评分卡 / 风控解释性模型
-- `Raw LR` 作为原始数值与人工特征工程的线性基线，表现稳定，但非线性表达能力弱于 `XGBoost`，整体结果也略低于 `WOE LR / ScoreCard`
-
-## 模型定稿说明
-
-- `Raw LR` 与 `WOE LR` 的最终方案并不机械追求单一验证指标第一名；当更复杂的特征组合只带来很小的边际收益时，最终方案会综合考虑 `AUC / KS`、`gap`、`VIF`、系数符号稳定性和业务解释性
-- `XGBoost` 参数搜索采用多轮顺序网格搜索。由于前一轮定稿参数会影响后一轮搜索空间，且领先参数组合之间的 `AUC / KS` 差距较小，最终参数不是机械采用每轮表格第一名，而是综合考虑验证集表现、`train-valid gap`、模型复杂度、正则化强度和稳定性后的人工定稿配置
-
-详细待办见 [TODO.md](./TODO.md)。
+这里的**内部测试集**是从有标签的 `cs-training.csv` 分层留出的 20%，不是 Kaggle 的 `cs-test.csv`。其他现有产物包括 [F2 阈值摘要](reports/final_f2_threshold_summary.md)、[评分卡分箱](reports/final_scorecard_bins.md)和[运行摘要](reports/final_report_run_summary.md)。F2 表中的最佳阈值是在内部测试集上事后选出的，使用时请留意这一口径。
 
 ## 如何运行
 
-推荐先阅读：
-
-1. `reports/final_model_comparison.md`
-2. `PROJECT_REPORT_DRAFT.md`
-3. `RUN_GUIDE.md`
-
-如需实际运行：
+推荐 Python 3.13。仓库不包含原始数据：自行下载 `cs-training.csv` 并放到项目根目录，随后安装依赖并运行定稿模型入口。
 
 ```bash
-.venv/bin/python run_final_report.py
+python -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+.venv/bin/python scripts/run_final_report.py
 ```
 
-也可以使用新的脚本入口：`.venv/bin/python scripts/run_final_report.py`。
+Windows 下将 `.venv/bin/python` 换成 `.venv\Scripts\python.exe`。原命令 `.venv/bin/python run_final_report.py` 仍可使用。定稿入口跳过特征和参数搜索，复用冻结配置，在 80% 训练验证数据上重新拟合三模型并写出 `reports/final_*`；最终 XGBoost 拟合不使用内部测试集做 early stopping。完整环境与运行说明见 [RUN_GUIDE.md](RUN_GUIDE.md) 和 [ENVIRONMENT.md](ENVIRONMENT.md)。
 
-注意：
+研究入口 `python scripts/run_research.py` 调用历史 `operation.py`，运行时间明显更长。`operation.ipynb` 用于交互式探索，`operation_full_output.ipynb` 及其 [Markdown 归档](reports/operation_full_output.md) 保留历史研究结果。两条研究入口的阶段开关不同，详见 [架构说明](docs/architecture.md)。
 
-- `run_final_report.py` 是当前推荐复现入口，适合快速得到最终模型结果
-- `operation.py` 会触发较完整的研究与调参流程，耗时明显更长
-- 如只需查看完整实验上下文，可优先阅读 `operation_full_output.ipynb` 和 `reports/operation_full_output.md`
+## 代码结构
 
-## 环境要求
+| 路径 | 职责 |
+|---|---|
+| [`gmsc/`](gmsc/) | 清洗、特征、分箱、WOE、评分卡、统计评估、绘图、最终报告及定稿配置 |
+| [`scripts/`](scripts/) | 最终报告与历史研究流程的可执行入口 |
+| `pipeline.py`、`analysis.py`、`visualization.py` | 供旧 `operation.py` 和 notebook 使用的兼容导入层 |
+| [`tests/`](tests/) | 小样本模块契约测试 |
+| [`reports/`](reports/) 与 [`figures/`](figures/) | 已生成的结果表、历史 notebook 导出与展示图片 |
 
-- 推荐 Python 版本：`3.13`
-- 建议使用虚拟环境
-- 依赖文件说明：
-- `requirements.txt`：推荐依赖文件
-- `requirements_lock.txt`：完整锁定依赖文件
-- `requirements_minimal.txt`：简洁依赖说明
+从数据到三模型的处理顺序、训练侧拟合边界见 [架构说明](docs/architecture.md)；逐文件函数与职责见 [功能模块说明](docs/modules.md)。
 
-环境说明见 [ENVIRONMENT.md](./ENVIRONMENT.md)。
+## 方法概览
 
-## 数据获取说明
+1. 读取 `cs-training.csv`，处理收入/家属数缺失、逾期次数 `96/98` 特殊编码，以及收入、负债率、授信使用率异常值，并保留质量标记。
+2. 构造逾期严重程度、逾期密度、人均收入、月债务、信用压力等衍生特征，建立一维/二维分箱和交互信号。
+3. 在训练侧拟合分箱、WOE、Raw LR 中心化均值等参数，并对验证或内部测试数据应用已拟合结果。
+4. 研究路径使用五折分层交叉验证进行变量与参数搜索；定稿路径直接读取 `gmsc/config/final_models.py` 中冻结的特征和参数。
+5. 比较 AUC、KS、F2、Precision/Recall、Gain/Lift，并输出评分卡分数分箱；研究归档还包含图形和 SHAP 分析。
 
-- 原始数据来自 Kaggle `Give Me Some Credit`
-- 如公开发布 GitHub 仓库，建议只保留代码、文档和小型结果图，不直接上传原始 CSV / Excel 数据文件
-- 可在 README 中说明用户需自行从 Kaggle 下载并放置到项目根目录
+## 当前边界
 
-## 结果说明
+- 模块化迁移已通过编译、导入和三项小样本测试；仓库缺少原始 CSV，尚未完成新旧入口的全数据预测与结果对照。
+- `operation.py` 仍是历史研究编排脚本，notebook 也保留交互式实验代码。根目录兼容导入层仅服务于这两类旧入口。
+- 现有分箱排名、测试集最佳 F2 阈值及评分卡训练/测试分箱仍有待单独修正的结果口径问题，详见 [架构说明](docs/architecture.md)。
+- Kaggle 数据适合方法展示；实际风控使用仍需时间外验证、持续监控与更严格的业务评估。
 
-- 当前可信结果来源包括：
-- `run_final_report.py` 导出的 `reports/final_*` 文件
-- Windows Python 3.13 环境完整重跑后的 `operation_full_output.ipynb` 及其导出文件
-- 当前标准 Python 3.13 `.venv` 环境下的 final-only 结果建议作为 README、简历和 GitHub 展示的主引用口径
-- `Raw LR`、`WOE LR / ScoreCard`、`XGBoost` 三类模型均已完成比较，其中 `XGBoost` 的测试集表现约为 `AUC=0.8662`、`KS=0.5824`，整体排序能力稍优；`WOE LR / ScoreCard` 的测试集表现约为 `AUC=0.8596`、`KS=0.5698`，在性能略低于 `XGBoost` 的同时兼具较好的解释性与稳定性
-- 早期部分 Linux / WSL 环境中曾出现过 SHAP 或依赖兼容性问题，但这类问题主要影响可解释性辅助模块，不影响当前 `AUC`、`KS`、`F2`、`Gain/Lift` 等核心结果引用；当前标准 Python 3.13 `.venv` 环境下 `run_final_report.py` 已成功运行并稳定导出 `reports/final_*`
-
-## 已知限制
-
-- 当前项目没有完整的 `pytest` 测试入口
-- `operation.py` 是研究脚本，不是完全自动化 pipeline
-- `XGBoost` 最终参数为多轮顺序搜索后的人工定稿，并不保证全局最优
-- Kaggle 公开结构化数据集适合作为方法展示；真实业务落地仍需要更严格的时间外验证、监控和合规评估
-
-更详细说明见 [PROJECT_REPORT_DRAFT.md](./PROJECT_REPORT_DRAFT.md)。
-
-## 后续改进方向
-
-- 进一步精简 README 和 GitHub 展示结构
-- 继续优化“完整研究入口”和“final-only 复现入口”的职责边界
-- 进一步区分 notebook 与脚本的职责
-- 可选地继续优化 SHAP 与环境说明
+项目方法及历史结论的展开版本见 [项目报告草稿](PROJECT_REPORT_DRAFT.md)，后续事项见 [TODO.md](TODO.md)。
